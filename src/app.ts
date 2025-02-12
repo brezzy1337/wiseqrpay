@@ -26,8 +26,12 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-app.listen(port, () => {
-    console.log(`WizeQRPay server running on port ${port}`);
-});
+// Only start the server if we're not in a Vercel environment
+if (process.env.VERCEL !== '1') {
+    app.listen(port, () => {
+        console.log(`WizeQRPay server running on port ${port}`);
+    });
+}
 
+// Export the Express app for Vercel
 export default app;
