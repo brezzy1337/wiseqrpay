@@ -13,9 +13,9 @@ export class PaymentController {
             const authUrl = this.wiseService.getAuthUrl();
             // Store payment details in session for later use after OAuth callback
             req.session.paymentDetails = {
-                amount: req.query.amount,
-                sourceCurrency: req.query.sourceCurrency,
-                targetCurrency: req.query.targetCurrency
+                amount: req.query.amount as string,
+                sourceCurrency: req.query.sourceCurrency as string,
+                targetCurrency: req.query.targetCurrency as string
             };
             res.redirect(authUrl);
         } catch (error) {
@@ -23,7 +23,6 @@ export class PaymentController {
             res.status(500).json({ error: 'Failed to initiate authentication' });
         }
     };
-
     handleCallback = async (req: Request, res: Response) => {
         try {
             const { code } = req.query;
