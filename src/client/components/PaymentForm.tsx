@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { trpc } from '../utils/trpc';
+import { z } from 'zod';
 import {
     Box,
     TextField,
@@ -48,20 +49,21 @@ const PaymentForm: React.FC = () => {
         }
     });
 
-    const initiateAuth = trpc.initiateAuth.useQuery();
-    
-    const onSubmit = async (data: PaymentFormData) => {
-        try {
-            const result = await initiateAuth.mutateAsync({
-                amount: data.amount,
-                sourceCurrency: data.currency,
-                targetCurrency: data.currency
-            });
-            
-            setQrValue(result.authUrl);
-        } catch (error) {
+    const initiatePayment = trpc.initiateAuth.useMutation({
+        onSuccess: (data) => {
+            setQrValue(data.authUrl);
+        },
+        onError: (error) => {
             console.error('Failed to initiate payment:', error);
         }
+    });
+    
+    const onSubmit = (data: PaymentFormData) => {
+        initiatePayment.mutate({
+            amount: data.amount,
+            sourceCurrency: data.currency,
+            targetCurrency: data.currency
+        });
     };
 
     return (
@@ -161,9 +163,10 @@ const PaymentForm: React.FC = () => {
                         variant="contained"
                         color="primary"
                         fullWidth
+                        disabled={initiatePayment.isLoading}
                         sx={{ mt: 2 }}
                     >
-                        Generate QR Code
+                        {initiatePayment.isLoading ? 'Generating...' : 'Generate QR Code'}
                     </Button>
                 </form>
 
