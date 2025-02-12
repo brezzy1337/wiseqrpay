@@ -49,21 +49,19 @@ const PaymentForm: React.FC = () => {
         }
     });
 
-    const initiatePayment = trpc.initiateAuth.useMutation({
-        onSuccess: (data) => {
-            setQrValue(data.authUrl);
-        },
-        onError: (error) => {
+    const initiatePayment = trpc.initiateAuth.useMutation();
+    
+    const onSubmit = async (data: PaymentFormData) => {
+        try {
+            const result = await initiatePayment.mutateAsync({
+                amount: data.amount,
+                sourceCurrency: data.currency,
+                targetCurrency: data.currency
+            });
+            setQrValue(result.authUrl);
+        } catch (error) {
             console.error('Failed to initiate payment:', error);
         }
-    });
-    
-    const onSubmit = (data: PaymentFormData) => {
-        initiatePayment.mutate({
-            amount: data.amount,
-            sourceCurrency: data.currency,
-            targetCurrency: data.currency
-        });
     };
 
     return (
