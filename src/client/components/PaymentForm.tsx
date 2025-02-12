@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
     Box,
     TextField,
@@ -24,21 +24,21 @@ interface PaymentFormData {
     currency: string;
 }
 
-const validationSchema = yup.object({
-    country: yup.string().required('Country is required'),
-    service: yup.string().required('Payment service is required'),
-    accountNumber: yup.string().required('Account number is required'),
-    amount: yup.string()
-        .required('Amount is required')
-        .matches(/^\d+(\.\d{1,2})?$/, 'Amount must be a valid number'),
-    currency: yup.string().required('Currency is required'),
+const validationSchema = z.object({
+    country: z.string().min(1, 'Country is required'),
+    service: z.string().min(1, 'Payment service is required'),
+    accountNumber: z.string().min(1, 'Account number is required'),
+    amount: z.string()
+        .min(1, 'Amount is required')
+        .regex(/^\d+(\.\d{1,2})?$/, 'Amount must be a valid number'),
+    currency: z.string().min(1, 'Currency is required'),
 });
 
 const PaymentForm: React.FC = () => {
     const [qrValue, setQrValue] = useState<string>('');
     
     const { control, handleSubmit, formState: { errors } } = useForm<PaymentFormData>({
-        resolver: yupResolver(validationSchema),
+        resolver: zodResolver(validationSchema),
         defaultValues: {
             country: '',
             service: '',
