@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
     Box,
     TextField,
@@ -9,6 +12,7 @@ import {
     InputLabel,
     Typography,
     Paper,
+    FormHelperText,
 } from '@mui/material';
 import QRCode from 'react-qr-code';
 
@@ -20,30 +24,34 @@ interface PaymentFormData {
     currency: string;
 }
 
+const validationSchema = yup.object({
+    country: yup.string().required('Country is required'),
+    service: yup.string().required('Payment service is required'),
+    accountNumber: yup.string().required('Account number is required'),
+    amount: yup.string()
+        .required('Amount is required')
+        .matches(/^\d+(\.\d{1,2})?$/, 'Amount must be a valid number'),
+    currency: yup.string().required('Currency is required'),
+});
+
 const PaymentForm: React.FC = () => {
-    const [formData, setFormData] = useState<PaymentFormData>({
-        country: '',
-        service: '',
-        accountNumber: '',
-        amount: '',
-        currency: 'USD'
-    });
     const [qrValue, setQrValue] = useState<string>('');
+    
+    const { control, handleSubmit, formState: { errors } } = useForm<PaymentFormData>({
+        resolver: yupResolver(validationSchema),
+        defaultValues: {
+            country: '',
+            service: '',
+            accountNumber: '',
+            amount: '',
+            currency: 'USD'
+        }
+    });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        // Generate payment URL
+    const onSubmit = (data: PaymentFormData) => {
         const paymentUrl = `${window.location.origin}/api/payment?` + 
-            new URLSearchParams(formData as any).toString();
+            new URLSearchParams(data as any).toString();
         setQrValue(paymentUrl);
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name as string]: value
-        }));
     };
 
     return (
@@ -53,68 +61,90 @@ const PaymentForm: React.FC = () => {
                     Generate Payment QR Code
                 </Typography>
                 
-                <form onSubmit={handleSubmit}>
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel>Country</InputLabel>
-                        <Select
-                            name="country"
-                            value={formData.country}
-                            onChange={handleChange}
-                            required
-                        >
-                            <MenuItem value="US">United States</MenuItem>
-                            <MenuItem value="UK">United Kingdom</MenuItem>
-                            <MenuItem value="EU">European Union</MenuItem>
-                        </Select>
-                    </FormControl>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <Controller
+                        name="country"
+                        control={control}
+                        render={({ field }) => (
+                            <FormControl fullWidth margin="normal" error={!!errors.country}>
+                                <InputLabel>Country</InputLabel>
+                                <Select {...field}>
+                                    <MenuItem value="US">United States</MenuItem>
+                                    <MenuItem value="UK">United Kingdom</MenuItem>
+                                    <MenuItem value="EU">European Union</MenuItem>
+                                </Select>
+                                {errors.country && (
+                                    <FormHelperText>{errors.country.message}</FormHelperText>
+                                )}
+                            </FormControl>
+                        )}
+                    />
 
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel>Payment Service</InputLabel>
-                        <Select
-                            name="service"
-                            value={formData.service}
-                            onChange={handleChange}
-                            required
-                        >
-                            <MenuItem value="wise">Wise</MenuItem>
-                            <MenuItem value="revolut">Revolut</MenuItem>
-                        </Select>
-                    </FormControl>
+                    <Controller
+                        name="service"
+                        control={control}
+                        render={({ field }) => (
+                            <FormControl fullWidth margin="normal" error={!!errors.service}>
+                                <InputLabel>Payment Service</InputLabel>
+                                <Select {...field}>
+                                    <MenuItem value="wise">Wise</MenuItem>
+                                    <MenuItem value="revolut">Revolut</MenuItem>
+                                </Select>
+                                {errors.service && (
+                                    <FormHelperText>{errors.service.message}</FormHelperText>
+                                )}
+                            </FormControl>
+                        )}
+                    />
 
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        label="Account Number"
+                    <Controller
                         name="accountNumber"
-                        value={formData.accountNumber}
-                        onChange={handleChange}
-                        required
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                fullWidth
+                                margin="normal"
+                                label="Account Number"
+                                error={!!errors.accountNumber}
+                                helperText={errors.accountNumber?.message}
+                            />
+                        )}
                     />
 
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        label="Amount"
+                    <Controller
                         name="amount"
-                        type="number"
-                        value={formData.amount}
-                        onChange={handleChange}
-                        required
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                fullWidth
+                                margin="normal"
+                                label="Amount"
+                                type="text"
+                                error={!!errors.amount}
+                                helperText={errors.amount?.message}
+                            />
+                        )}
                     />
 
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel>Currency</InputLabel>
-                        <Select
-                            name="currency"
-                            value={formData.currency}
-                            onChange={handleChange}
-                            required
-                        >
-                            <MenuItem value="USD">USD</MenuItem>
-                            <MenuItem value="EUR">EUR</MenuItem>
-                            <MenuItem value="GBP">GBP</MenuItem>
-                        </Select>
-                    </FormControl>
+                    <Controller
+                        name="currency"
+                        control={control}
+                        render={({ field }) => (
+                            <FormControl fullWidth margin="normal" error={!!errors.currency}>
+                                <InputLabel>Currency</InputLabel>
+                                <Select {...field}>
+                                    <MenuItem value="USD">USD</MenuItem>
+                                    <MenuItem value="EUR">EUR</MenuItem>
+                                    <MenuItem value="GBP">GBP</MenuItem>
+                                </Select>
+                                {errors.currency && (
+                                    <FormHelperText>{errors.currency.message}</FormHelperText>
+                                )}
+                            </FormControl>
+                        )}
+                    />
 
                     <Button 
                         type="submit"
