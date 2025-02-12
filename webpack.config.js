@@ -17,6 +17,9 @@ module.exports = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.jsx'],
+        alias: {
+            '@trpc/react-query': require.resolve('@trpc/react-query'),
+        }
     },
     devServer: {
         static: {
