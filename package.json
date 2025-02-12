@@ -1,14 +1,20 @@
 {
   "name": "wiseqrpay",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/app.ts",
   "scripts": {
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["wise", "payments", "qr"],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "QR code-based payment system using Wise API",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.1",
