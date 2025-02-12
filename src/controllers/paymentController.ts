@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { WiseService } from '../services/wiseService';
+import { paymentDetailsSchema, authCallbackSchema } from '../schemas/paymentSchema';
 
 export class PaymentController {
     private wiseService: WiseService;
@@ -10,26 +11,26 @@ export class PaymentController {
 
     initiateAuth = async (req: Request, res: Response) => {
         try {
+            const paymentDetails = paymentDetailsSchema.parse({
+                amount: req.query.amount,
+                sourceCurrency: req.query.sourceCurrency,
+                targetCurrency: req.query.targetCurrency
+            });
+
             const authUrl = this.wiseService.getAuthUrl();
-            // Store payment details in session for later use after OAuth callback
-            req.session.paymentDetails = {
-                amount: req.query.amount as string,
-                sourceCurrency: req.query.sourceCurrency as string,
-                targetCurrency: req.query.targetCurrency as string
-            };
+            req.session.paymentDetails = paymentDetails;
             res.redirect(authUrl);
         } catch (error) {
             console.error('Auth initiation error:', error);
+            if (error.errors) {
+                return res.status(400).json({ errors: error.errors });
+            }
             res.status(500).json({ error: 'Failed to initiate authentication' });
         }
     };
     handleCallback = async (req: Request, res: Response) => {
         try {
-            const { code } = req.query;
-            if (!code || typeof code !== 'string') {
-                throw new Error('No authorization code received');
-            }
-
+            const { code } = authCallbackSchema.parse(req.query);
             const accessToken = await this.wiseService.getAccessToken(code);
             
             // Store the access token in session
@@ -54,13 +55,12 @@ export class PaymentController {
                 return res.status(401).json({ error: 'Not authenticated with Wise' });
             }
 
-            const { amount, sourceCurrency, targetCurrency } = req.body;
-            
+            const paymentDetails = paymentDetailsSchema.parse(req.body);
             const transfer = await this.wiseService.createTransfer(
                 accessToken,
-                parseFloat(amount),
-                sourceCurrency,
-                targetCurrency
+                parseFloat(paymentDetails.amount),
+                paymentDetails.sourceCurrency,
+                paymentDetails.targetCurrency
             );
 
             res.status(201).json({
