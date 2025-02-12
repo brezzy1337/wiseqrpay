@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "commonjs",
+    "jsx": "react",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
