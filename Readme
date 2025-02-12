@@ -1,0 +1,85 @@
+## WizeQRPay
+WizeQRPay is a proof-of-concept web service that lets merchants or individuals generate dynamic Wise payment links—accessible via a simple QR code. By scanning the QR code, a payer can quickly authorize and complete a transfer to a designated Wise recipient, without manually entering details each time.
+
+Disclaimer: WizeQRPay is not affiliated with or endorsed by Wise (formerly TransferWise). “Wise” is a trademark of Wise PLC. Use this tool responsibly and consult legal counsel if you have questions regarding trademark usage.
+
+#### Features
+QR-based Payment Initiation: Generate a single QR code that points users to a payment workflow.
+Dynamic Wise Transfer Creation: On scan, WizeQRPay authenticates the payer with Wise (via OAuth) and creates a fresh payment link targeting your Wise account.
+Customizable Amount & Currencies: (Planned) Let merchants preset amounts or allow payers to choose.
+API-Driven: Built on Wise’s public API for transfer and quote creation.
+Easy Hosting: Deploy on platforms like Render, Heroku, or AWS.
+
+#### How It Works
+Scan: The payer scans a QR code which opens wizeqrpay.com/pay.
+Authenticate: If the payer isn’t already logged in to Wise, WizeQRPay prompts an OAuth flow with Wise.
+Create Transfer: WizeQRPay uses the payer’s Wise tokens to create a new transfer directed to your Wise recipient ID.
+Confirm Payment: The payer reviews fees and confirms the payment within Wise.
+Done: Funds are transferred to your Wise account once completed.
+
+wizeqrpay/
+├── src/
+│   ├── controllers/
+│   │   └── paymentController.js      # Logic to handle payment creation
+│   ├── routes/
+│   │   └── paymentRoutes.js          # Express routes for /pay, /auth/callback, etc.
+│   ├── services/
+│   │   └── wiseService.js           # Functions to interact with Wise API
+│   └── app.js                        # Express app initialization
+├── config/
+│   └── default.json                  # Basic config (Wise client IDs, secrets, etc.)
+├── public/
+│   └── qr-samples/                   # Sample QR codes or static files
+├── .env.example                      # Example environment variables
+├── package.json                      # Project dependencies & scripts
+├── README.md                         # This documentation
+└── LICENSE                           # License info
+
+#### Configuration
+In your .env file or Render/Heroku environment settings, define the following:
+
+ini
+Copy
+WISE_CLIENT_ID=yourWiseClientID
+WISE_CLIENT_SECRET=yourWiseClientSecret
+WISE_REDIRECT_URI=https://yourdomain.com/auth/callback
+WISE_RECIPIENT_ID=yourRecipientProfileId
+
+SESSION_SECRET=someRandomString    # For Express session
+PORT=3000                          # Or any port you prefer
+WISE_CLIENT_ID and WISE_CLIENT_SECRET: From your Wise Developer dashboard.
+WISE_REDIRECT_URI: The callback URL where Wise will redirect users after OAuth. Must match your Wise app settings.
+WISE_RECIPIENT_ID: The ID or account details for where you want to receive funds.
+SESSION_SECRET: Used by Express to sign session cookies. Keep this secret.
+PORT: The port on which the Node.js server runs.
+
+#### Usage Flow
+Merchant Setup: The merchant (you) prints or displays a QR code that encodes the URL: https://wizeqrpay.com/pay.
+User Scan: The payer scans the code with their phone’s camera or QR scanner app.
+Login to Wise: If not logged in, the payer is redirected to the Wise OAuth page.
+Authorize: The payer grants WizeQRPay permission to initiate transfers on their behalf.
+Payment Creation: WizeQRPay creates a new transfer (and possibly a quote) with the payer’s Wise account → your Wise account.
+Confirmation: The payer confirms within Wise. Funds are then transferred.
+
+#### Security & Compliance
+TLS/SSL: Always run your production environment over HTTPS.
+OAuth Tokens: Store access tokens securely (e.g., encrypted or in session).
+Wise API: Comply with all Wise Developer terms and conditions.
+User Data: Keep minimal logs of user data—only what’s necessary for troubleshooting.
+GDPR / Data Privacy: If you have EU users, ensure you comply with relevant data privacy laws.
+
+#### Roadmap
+Multiple Currencies: Allow the merchant to specify different currency requests.
+Custom Amounts: Provide a UI for the payer to type in an amount or pick from presets.
+Webhook Integration: Implement a webhook to track when transfers complete.
+Multi-Recipient: Let the user pick from multiple recipients, if needed.
+Enhanced UI: Add a slick front-end with real-time status updates.
+
+#### Contributing
+Contributions are welcome! Please follow these steps:
+
+Fork this repository.
+Create a feature branch (git checkout -b feature/new-feature).
+Commit your changes and push to your fork.
+Submit a pull request describing your changes.
+We review PRs for code quality, security implications, and alignment with the project’s goals.
