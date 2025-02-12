@@ -1,19 +1,14 @@
 import { Router } from 'express';
-import { PaymentController } from '../controllers/paymentController';
+import * as trpcExpress from '@trpc/server/adapters/express';
+import { router } from '../server/trpc';
 
-const router = Router();
-const paymentController = new PaymentController();
+const trpcRouter = Router();
 
-// Route to initiate OAuth flow
-router.get('/auth', paymentController.initiateAuth);
+trpcRouter.use(
+  '/trpc',
+  trpcExpress.createExpressMiddleware({
+    router,
+  })
+);
 
-// OAuth callback route
-router.get('/auth/callback', paymentController.handleCallback);
-
-// Route to create a new payment
-router.post('/payment', paymentController.createPayment);
-
-// Route to get payment status
-router.get('/payment/:id', paymentController.getPaymentStatus);
-
-export const paymentRoutes = router;
+export const paymentRoutes = trpcRouter;

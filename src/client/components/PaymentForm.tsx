@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { trpc } from '../utils/trpc';
 import {
     Box,
     TextField,
@@ -48,10 +48,20 @@ const PaymentForm: React.FC = () => {
         }
     });
 
-    const onSubmit = (data: PaymentFormData) => {
-        const paymentUrl = `${window.location.origin}/api/payment?` + 
-            new URLSearchParams(data as any).toString();
-        setQrValue(paymentUrl);
+    const initiateAuth = trpc.initiateAuth.useQuery();
+    
+    const onSubmit = async (data: PaymentFormData) => {
+        try {
+            const result = await initiateAuth.mutateAsync({
+                amount: data.amount,
+                sourceCurrency: data.currency,
+                targetCurrency: data.currency
+            });
+            
+            setQrValue(result.authUrl);
+        } catch (error) {
+            console.error('Failed to initiate payment:', error);
+        }
     };
 
     return (
