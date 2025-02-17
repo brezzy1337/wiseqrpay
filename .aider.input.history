@@ -414,3 +414,27 @@
 # 2025-02-17 07:48:57.498036
 +npx create-t3-app@latest wise-qr-payments
 +
+
+# 2025-02-17 08:06:26.451809
++n
+
+# 2025-02-17 08:07:16.215437
++Hey can we use context.md and start at step 3
+
+# 2025-02-17 08:07:35.533210
++y
+
+# 2025-02-17 08:07:56.304497
++/run npx prisma migrate dev --name init_wise_payments
+
+# 2025-02-17 08:07:56.304612
++/run npx prisma migrate dev --name init_wise_payments
+
+# 2025-02-17 08:07:58.996629
++/run npx prisma generate
+
+# 2025-02-17 08:07:58.996736
++/run npx prisma generate
+
+# 2025-02-17 08:08:04.493966
++n
