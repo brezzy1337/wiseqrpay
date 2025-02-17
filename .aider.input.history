@@ -1,0 +1,416 @@
+
+# 2025-02-12 02:20:21.260355
++y
+
+# 2025-02-12 02:20:29.157005
++n
+
+# 2025-02-12 02:20:37.628680
++/add Readme
+
+# 2025-02-12 02:21:04.501461
++Hey can you get me started by using the readme file? You are a expert in wize payment intergration.
+
+# 2025-02-12 02:21:32.632835
++y
+
+# 2025-02-12 02:21:50.115503
++/run npm init -y
+
+# 2025-02-12 02:21:50.115661
++/run npm init -y
+
+# 2025-02-12 02:21:52.223134
++/run npm install express express-session axios dotenv typescript @types/express @types/express-session @types/node ts-node
+
+# 2025-02-12 02:21:52.223255
++/run npm install express express-session axios dotenv typescript @types/express @types/express-session @types/node ts-node
+
+# 2025-02-12 02:21:59.749557
++/run npm install --save-dev nodemon
+
+# 2025-02-12 02:21:59.749692
++/run npm install --save-dev nodemon
+
+# 2025-02-12 02:22:06.818440
++y
+
+# 2025-02-12 02:22:15.058381
++I will be deploying this on vercel
+
+# 2025-02-12 02:22:46.391662
++y
+
+# 2025-02-12 02:23:23.490932
++aider-install
++y
+
+# 2025-02-12 02:23:27.633844
++y
+
+# 2025-02-12 02:23:27.638873
++/run npm install @vercel/node
+
+# 2025-02-12 02:23:27.638989
++/run npm install @vercel/node
+
+# 2025-02-12 02:23:42.017870
++/run npm install --save-dev typescript @types/node
+
+# 2025-02-12 02:23:42.018034
++/run npm install --save-dev typescript @types/node
+
+# 2025-02-12 02:23:48.949765
++y
+
+# 2025-02-12 02:23:56.328997
++n
+
+# 2025-02-12 02:23:58.087335
++y
+
+# 2025-02-12 02:23:58.090889
++/run vercel
+
+# 2025-02-12 02:23:58.090960
++/run vercel
+
+# 2025-02-12 02:24:02.220613
++y
+
+# 2025-02-12 03:16:07.266185
++Okay lets create the front end page which will be generate a QR code. It will be a form for merchants to enter there bank account infomation. There will be different forms based on country and service used (revolut, wise, etc).
+
+# 2025-02-12 03:16:43.015020
++y
+
+# 2025-02-12 03:16:58.706563
++/run npm install react react-dom @types/react @types/react-dom qrcode react-qr-code @mui/material @emotion/react @emotion/styled
+
+# 2025-02-12 03:16:58.706662
++/run npm install react react-dom @types/react @types/react-dom qrcode react-qr-code @mui/material @emotion/react @emotion/styled
+
+# 2025-02-12 03:17:27.373837
++n
+
+# 2025-02-12 03:17:29.123037
++y
+
+# 2025-02-12 03:17:29.126474
++/run npm install --save-dev webpack webpack-cli webpack-dev-server ts-loader
+
+# 2025-02-12 03:17:29.126550
++/run npm install --save-dev webpack webpack-cli webpack-dev-server ts-loader
+
+# 2025-02-12 03:17:48.336370
++n
+
+# 2025-02-12 03:17:51.926482
++y
+
+# 2025-02-12 03:17:51.930954
++/run npm run client:dev
+
+# 2025-02-12 03:17:51.931072
++/run npm run client:dev
+
+# 2025-02-12 03:17:56.341756
++n
+
+# 2025-02-12 03:18:37.974293
++Lets create the basic `PaymentController`
+
+# 2025-02-12 03:18:58.603198
++y
+
+# 2025-02-12 03:23:23.187276
++/run npm run dev
+
+# 2025-02-12 03:23:23.187380
++/run npm run dev
+
+# 2025-02-12 05:33:16.748641
++n
+
+# 2025-02-12 05:34:07.283236
++Hey so my files want to use jsx instead of tsx. Do you have any clue why this is the happening. I'm thinking it has something to do with one of my configuration files.
+
+# 2025-02-12 05:34:44.907232
++n
+
+# 2025-02-12 05:34:46.665151
++Hey so my files want to use jsx instead of tsx. Do you have any clue why this is the happening. I'm thinking it has something to do with one of my configuration files.
+
+# 2025-02-12 05:34:53.507622
++y
+
+# 2025-02-12 05:35:11.496842
++n
+
+# 2025-02-12 05:36:04.713195
++Can I get some react libary designed to handle forms?
+
+# 2025-02-12 05:38:15.006745
++y
+
+# 2025-02-12 05:38:54.164213
++/run npm install react-hook-form @hookform/resolvers yup
+
+# 2025-02-12 05:38:54.164297
++/run npm install react-hook-form @hookform/resolvers yup
+
+# 2025-02-12 05:39:02.237126
++n
+
+# 2025-02-12 05:39:43.055476
++Can we use zod instead of yup?
+
+# 2025-02-12 05:39:59.694745
++y
+
+# 2025-02-12 05:39:59.697949
++/run npm uninstall yup @hookform/resolvers/yup && npm install zod @hookform/resolvers/zod
+
+# 2025-02-12 05:39:59.698018
++/run npm uninstall yup @hookform/resolvers/yup && npm install zod @hookform/resolvers/zod
+
+# 2025-02-12 05:40:07.919045
++y
+
+# 2025-02-12 05:40:09.163127
++/run npm run dev
+
+# 2025-02-12 05:40:09.163234
++/run npm run dev
+
+# 2025-02-12 05:42:47.322912
++n
+
+# 2025-02-12 05:53:41.745405
++/add src/controllers/paymentController.ts
+
+# 2025-02-12 05:53:44.375912
++/add src/routes/paymentRoutes.ts
+
+# 2025-02-12 05:53:57.108473
++Can we scale zod to `PaymentController`
+
+# 2025-02-12 05:54:23.430285
++y
+
+# 2025-02-12 05:54:35.083559
++n
+
+# 2025-02-12 05:56:18.257303
++I want to intergrate TRPC for this project which should allow the payment form, controler, and routes to share the same validation
+
+# 2025-02-12 05:56:43.928457
++t
+
+# 2025-02-12 05:56:47.189073
++y
+
+# 2025-02-12 05:56:52.619356
++/run npm install @trpc/server @trpc/client @trpc/react-query @tanstack/react-query zod
+
+# 2025-02-12 05:56:52.619456
++/run npm install @trpc/server @trpc/client @trpc/react-query @tanstack/react-query zod
+
+# 2025-02-12 05:57:03.074327
++n
+
+# 2025-02-12 05:57:07.577586
++y
+
+# 2025-02-12 05:57:07.582157
++/run rm src/controllers/paymentController.ts
+
+# 2025-02-12 05:57:07.582295
++/run rm src/controllers/paymentController.ts
+
+# 2025-02-12 05:57:12.314295
++n
+
+# 2025-02-12 05:58:47.198581
++Can we install the needed libaries for trpc
+
+# 2025-02-12 05:58:58.478328
++y
+
+# 2025-02-12 05:59:01.763805
++/run npm install @trpc/server @trpc/client @trpc/react-query @tanstack/react-query @trpc/next
+
+# 2025-02-12 05:59:01.763880
++/run npm install @trpc/server @trpc/client @trpc/react-query @tanstack/react-query @trpc/next
+
+# 2025-02-12 05:59:15.117506
++n
+
+# 2025-02-12 06:32:46.063549
++How do I get the client to display when my server is started
+
+# 2025-02-12 06:32:55.757995
++y
+
+# 2025-02-12 06:33:47.909053
++/add src/client/index.tsx
+
+# 2025-02-12 06:33:51.228605
++How do I get the client to display when my server is started
+
+# 2025-02-12 06:34:06.920492
++y
+
+# 2025-02-12 06:34:23.126335
++n
+
+# 2025-02-12 06:38:18.961095
++/add src/client/components/PaymentForm.tsx
+
+# 2025-02-12 06:38:39.756995
++Can you format the `PaymentForm` to use trpc React Query?
+
+# 2025-02-12 06:40:21.537188
++n
+
+# 2025-02-12 06:40:22.893476
++Property 'useMutation' does not exist on type 'DecoratedQuery<{ input: { amount: string; sourceCurrency: string; targetCurrency: string; }; output: { authUrl: string; paymentDetails: { amount: string; sourceCurrency: string; targetCurrency: string; }; }; transformer: false; errorShape: DefaultErrorShape; }>'.ts(2339)
+
+# 2025-02-12 07:35:33.977862
++n
+
+# 2025-02-12 07:36:26.146685
++/add src/client/components/PaymentForm.tsx
+
+# 2025-02-12 07:36:58.868440
++I'm getting this error on my useMutation for initiatePayment:
++property 'useMutation' does not exist on type 'DecoratedQuery<{ input: { amount: string; sourceCurrency: string; targetCurrency: string; }; output: { authUrl: string; paymentDetails: { amount: string; sourceCurrency: string; targetCurrency: string; }; }; transformer: false; errorShape: DefaultErrorShape; }>'.ts(2339)
+
+# 2025-02-12 07:37:12.535303
++y
+
+# 2025-02-12 09:05:12.259639
++n
+
+# 2025-02-12 09:05:27.075342
++Can you over look my client folder with this documentation?
++https://trpc.io/docs/client/react/setup
+
+# 2025-02-12 09:05:28.705106
++y
+
+# 2025-02-12 09:05:51.256096
++n
+
+# 2025-02-12 09:06:07.008284
++y
+
+# 2025-02-12 09:15:28.059232
++Can you explain this error?
++Property 'useMutation' does not exist on type 'DecoratedQuery<{ input: { amount: string; sourceCurrency: string; targetCurrency: string; }; output: { authUrl: string; paymentDetails: { amount: string; sourceCurrency: string; targetCurrency: string; }; }; transformer: false; errorShape: DefaultErrorShape; }>'.ts(2339)
+
+# 2025-02-17 06:33:47.675701
++n
+
+# 2025-02-17 06:46:28.201586
++Hey is there a way to swith my tech stack to next.js?
+
+# 2025-02-17 06:46:36.297625
++y
+
+# 2025-02-17 06:48:38.599499
++awesome thank are there changes we can make to have this align with the t3 stack created from this command: npx create-t3-app@latest?
+
+# 2025-02-17 06:48:52.615119
++y
+
+# 2025-02-17 07:34:04.988480
++n
+
+# 2025-02-17 07:34:05.957708
++4
+
+# 2025-02-17 07:35:38.056687
++Hey I want to convert this project to the t3 app structure. 
+
+# 2025-02-17 07:35:46.227374
++y
+
+# 2025-02-17 07:37:23.247788
++lets keep going with the reflections
+
+# 2025-02-17 07:37:53.782202
++y
+
+# 2025-02-17 07:38:41.147339
++n
+
+# 2025-02-17 07:38:50.111095
++y
+
+# 2025-02-17 07:40:22.136919
++I think I want to reset this project to the bare bones so run a new prompt to build from. Whats the best way to do that?
+
+# 2025-02-17 07:42:07.038188
++y
+
+# 2025-02-17 07:42:07.041804
++/run git branch backup-$(date +%Y%m%d)
+
+# 2025-02-17 07:42:07.041896
++/run git branch backup-$(date +%Y%m%d)
+
+# 2025-02-17 07:42:09.423440
++y
+
+# 2025-02-17 07:42:09.429862
++/run rm -rf src/* dist/* node_modules package-lock.json
+
+# 2025-02-17 07:42:09.429994
++/run rm -rf src/* dist/* node_modules package-lock.json
+
+# 2025-02-17 07:42:18.554049
++n
+
+# 2025-02-17 07:43:22.550181
++/add context
+
+# 2025-02-17 07:43:25.773162
++n
+
+# 2025-02-17 07:43:31.021265
++/add src/context
+
+# 2025-02-17 07:43:57.234527
++/add context.md
+
+# 2025-02-17 07:44:32.045993
++can we use context.md to create the project?
+
+# 2025-02-17 07:45:09.372086
++y
+
+# 2025-02-17 07:45:23.783947
++n
+
+# 2025-02-17 07:45:27.023377
++y
+
+# 2025-02-17 07:46:52.603036
++/clear
+
+# 2025-02-17 07:47:15.645779
++remeber src is a clear project so you can start from step 1 for initialzing the project
+
+# 2025-02-17 07:47:38.478724
++y
+
+# 2025-02-17 07:48:25.461108
++n
+
+# 2025-02-17 07:48:45.414635
++y
+
+# 2025-02-17 07:48:57.498036
++npx create-t3-app@latest wise-qr-payments
++
