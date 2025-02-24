@@ -26,20 +26,49 @@ export const wiseRouter = createTRPCRouter({
 
 createPersonalProfile: publicProcedure
 .input(z.object({
-    type: z.enum(['personal', 'business']),
-    currency: currencyEnum,
-    firstName: z.string(),
-    lastName: z.string(),
-    dateOfBirth: z.date(),
-    phoneNumber: z.string().optional(),
-    occupation: z.string().optional(),
-    address: z.object({
-      countryCode: z.string(),
-      firstLine: z.string(),
-      postCode: z.string(),
-      city: z.string(),
-      state: z.string().optional()
-    })
+  firstName: z.string().max(30),
+  lastName: z.string().max(30),
+  preferredName: z.string().max(30).optional(),
+  nationality: z.string().length(3).toLowerCase(),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  externalCustomerId: z.string().optional(),
+  address: z.object({
+    addressFirstLine: z.string(),
+    city: z.string(),
+    countryIso3Code: z.string().length(3).toLowerCase(),
+    postCode: z.string(),
+    stateCode: z.string().max(5).optional()
+      .superRefine((stateCode, ctx) => {
+        const countryRequiresState = ['usa', 'can', 'bra', 'aus'];
+        if (countryRequiresState.includes(ctx.path[0]?.countryIso3Code) && !stateCode) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `State code is required for ${ctx.path[0]?.countryIso3Code.toUpperCase()}`,
+          });
+        }
+      }),
+  }),
+  contactDetails: z.object({
+    email: z.string().email(),
+    phoneNumber: z.string().regex(/^\+[1-9]\d{1,14}$/, "Invalid phone number format"),
+  }),
+  occupations: z.array(z.object({
+    code: z.string(),
+    format: z.literal("FREE_FORM")
+  })).optional(),
+}).and(
+  z.discriminatedUnion("nationality", [
+    z.object({
+      nationality: z.literal("jpn"),
+      details: z.object({
+        firstNameInKana: z.string(),
+        lastNameInKana: z.string(),
+      }),
+    }),
+    z.object({
+      nationality: z.string(),
+    }),
+  ])
   
   // Not needed since our users are creating QR codes to receive payments.
   //  Account requirements are not needed for receiving payments.
@@ -63,6 +92,61 @@ createPersonalProfile: publicProcedure
   //     });
   //     return data;
   //   }),
+
+  createBusinessProfile: publicProcedure
+    .input(z.object({
+      name: z.string().max(30),
+      registrationNumber: z.string(),
+      companyType: z.string(),
+      companyRole: z.string(),
+      descriptionOfBusiness: z.string(),
+      webpage: z.string().url(),
+      address: z.object({
+        addressFirstLine: z.string(),
+        city: z.string(),
+        countryIso3Code: z.string().length(3).toLowerCase(),
+        postCode: z.string(),
+        stateCode: z.string().max(5).optional()
+          .superRefine((stateCode, ctx) => {
+            const countryRequiresState = ['usa', 'can', 'bra', 'aus'];
+            if (countryRequiresState.includes(ctx.path[0]?.countryIso3Code) && !stateCode) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `State code is required for ${ctx.path[0]?.countryIso3Code.toUpperCase()}`,
+              });
+            }
+          }),
+      }),
+      contactDetails: z.object({
+        email: z.string().email(),
+        phoneNumber: z.string().regex(/^\+[1-9]\d{1,14}$/, "Invalid phone number format"),
+      }),
+    }))
+    .mutation(async ({ input }) => {
+      const response = await axios.post(
+        "https://api.wise.com/v2/profiles",
+        {
+          type: "business",
+          details: {
+            name: input.name,
+            registrationNumber: input.registrationNumber,
+            companyType: input.companyType,
+            companyRole: input.companyRole,
+            descriptionOfBusiness: input.descriptionOfBusiness,
+            webpage: input.webpage,
+          },
+          address: input.address,
+          contactDetails: input.contactDetails,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${env.WISE_CLIENT_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    }),
 
   createRecipient: publicProcedure
     .input(z.object({
