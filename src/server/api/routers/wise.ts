@@ -39,11 +39,17 @@ createPersonalProfile: publicProcedure
     postCode: z.string(),
     stateCode: z.string().max(5).optional()
       .superRefine((stateCode, ctx) => {
+        // Get the parent object (address) to access countryIso3Code
+        const address = ctx.parent as { countryIso3Code?: string };
         const countryRequiresState = ['usa', 'can', 'bra', 'aus'];
-        if (countryRequiresState.includes(ctx.path[0]?.countryIso3Code) && !stateCode) {
+        
+        if (address?.countryIso3Code && 
+            countryRequiresState.includes(address.countryIso3Code.toLowerCase()) && 
+            !stateCode) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `State code is required for ${ctx.path[0]?.countryIso3Code.toUpperCase()}`,
+            message: `State code is required for ${address.countryIso3Code.toUpperCase()}`,
+            path: ['stateCode']
           });
         }
       }),
