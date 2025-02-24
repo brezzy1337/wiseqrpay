@@ -68,7 +68,7 @@ createPersonalProfile: publicProcedure
     z.object({
       nationality: z.string(),
     }),
-  ])
+  ]),
   
   // Not needed since our users are creating QR codes to receive payments.
   //  Account requirements are not needed for receiving payments.
