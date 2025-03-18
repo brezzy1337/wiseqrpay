@@ -21,7 +21,8 @@ type SecondLevelCategory = typeof WISE_BUSINESS_CATEGORIES[FirstLevelCategory][n
 
 // Create a type-safe validator for second level categories based on first level
 const createSecondLevelValidator = (firstLevel: FirstLevelCategory) => {
-  const validCategories = WISE_BUSINESS_CATEGORIES[firstLevel];
+  // Convert readonly array to regular array with spread operator
+  const validCategories = [...WISE_BUSINESS_CATEGORIES[firstLevel]];
   return z.enum(validCategories as [string, ...string[]]);
 };
 
@@ -156,7 +157,8 @@ const WISE_BUSINESS_CATEGORIES = {
 // 4. The `as [string, ...string[]]` is a type assertion that tells TypeScript that the output is an array of strings.
 // 5. The main data transformation is done when converting an objects keys into a list of allowed values for the enum. 
 
-const firstLevelCategoryEnum = z.enum(Object.keys(WISE_BUSINESS_CATEGORIES) as [string, ...string[]]);
+// Convert readonly keys to regular array with spread operator
+const firstLevelCategoryEnum = z.enum([...Object.keys(WISE_BUSINESS_CATEGORIES)] as [string, ...string[]]);
 
 // 🔥 Function to Get Valid Second Level Categories
 /**
@@ -176,7 +178,8 @@ const getSecondLevelCategories = (firstLevel: FirstLevelCategory): readonly Seco
  * @returns A Zod schema that validates second-level categories
  */
 const secondLevelCategorySchema = (firstLevel: FirstLevelCategory) => {
-  const categories = WISE_BUSINESS_CATEGORIES[firstLevel] as [string, ...string[]];
+  // Convert readonly array to regular array with spread operator
+  const categories = [...WISE_BUSINESS_CATEGORIES[firstLevel]] as [string, ...string[]];
   return z.enum(categories);
 };
 
