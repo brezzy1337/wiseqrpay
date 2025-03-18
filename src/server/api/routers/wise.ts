@@ -282,18 +282,17 @@ export const wiseRouter = createTRPCRouter({
        */
       secondLevelCategory: z.string().superRefine((value, ctx) => {
         // Get the parent object that contains firstLevelCategory
-        const parentPath = ctx.path.slice(0, -1);
-        const parent = ctx.parent as { firstLevelCategory: FirstLevelCategory };
+        const data = ctx.data as { firstLevelCategory?: FirstLevelCategory };
         
-        if (parent && parent.firstLevelCategory) {
-          const validSecondLevels = getSecondLevelCategories(parent.firstLevelCategory);
+        if (data && data.firstLevelCategory) {
+          const validSecondLevels = getSecondLevelCategories(data.firstLevelCategory);
           
           // Convert the readonly tuple to a regular array for includes check
           // or use type assertion to tell TypeScript this is okay
           if (!validSecondLevels.includes(value as any)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `Invalid secondLevelCategory. Allowed values for ${parent.firstLevelCategory}: ${validSecondLevels.join(", ")}`,
+              message: `Invalid secondLevelCategory. Allowed values for ${data.firstLevelCategory}: ${validSecondLevels.join(", ")}`,
             });
           }
         }
