@@ -19,12 +19,11 @@ type FirstLevelCategory = keyof typeof WISE_BUSINESS_CATEGORIES;
 // Define the type for second level categories (union of all possible values)
 type SecondLevelCategory = typeof WISE_BUSINESS_CATEGORIES[FirstLevelCategory][number];
 
-// Create a type-safe validator for second level categories based on first level
-const createSecondLevelValidator = (firstLevel: FirstLevelCategory) => {
-  // Convert readonly array to regular array with spread operator
-  const validCategories = [...WISE_BUSINESS_CATEGORIES[firstLevel]];
+// Create a type-safe validator for second level categories based on the first level category.
+const createSecondLevelCategoryValidator = (firstLevel: FirstLevelCategory) => {
+  const validCategories = WISE_BUSINESS_CATEGORIES[firstLevel];
   return z.enum(validCategories as [string, ...string[]]);
-};
+}
 
 
 const WISE_BUSINESS_CATEGORIES = {
@@ -148,7 +147,7 @@ const WISE_BUSINESS_CATEGORIES = {
     "TRAVEL_OR_TOUR_ACTIVITIES_OTHER"
   ],
   OTHER: ["OTHER", "OTHER_NOT_LISTED_ABOVE"]
-} as const;
+}; 
 
 // Takes `WISE_BUSINESS_CATEGORIES` and creates a validator using Zod.
 // 1. First the input takes the `WISE_BUSINESS_CATEGORIES` object which contains a strucutred list of bussiness categories and their subcategories. Using Object.keys(), it pulls out the top level categories.  
@@ -157,8 +156,7 @@ const WISE_BUSINESS_CATEGORIES = {
 // 4. The `as [string, ...string[]]` is a type assertion that tells TypeScript that the output is an array of strings.
 // 5. The main data transformation is done when converting an objects keys into a list of allowed values for the enum. 
 
-// Convert readonly keys to regular array with spread operator
-const firstLevelCategoryEnum = z.enum([...Object.keys(WISE_BUSINESS_CATEGORIES)] as [string, ...string[]]);
+const firstLevelCategoryEnum = z.enum(Object.keys(WISE_BUSINESS_CATEGORIES) as [string, ...string[]]);
 
 // 🔥 Function to Get Valid Second Level Categories
 /**
@@ -167,20 +165,8 @@ const firstLevelCategoryEnum = z.enum([...Object.keys(WISE_BUSINESS_CATEGORIES)]
  * @param firstLevel - The first-level business category.
  * @returns An array of second-level business categories, or an empty array if the first-level category is not found.
  */
-const getSecondLevelCategories = (firstLevel: FirstLevelCategory): readonly SecondLevelCategory[] => {
+const getSecondLevelCategories = (firstLevel: FirstLevelCategory): readonly string[] => {
   return firstLevel in WISE_BUSINESS_CATEGORIES ? WISE_BUSINESS_CATEGORIES[firstLevel] : [];
-};
-
-/**
- * Creates a Zod schema for validating second-level categories based on a first-level category.
- * 
- * @param firstLevel - The first-level business category
- * @returns A Zod schema that validates second-level categories
- */
-const secondLevelCategorySchema = (firstLevel: FirstLevelCategory) => {
-  // Convert readonly array to regular array with spread operator
-  const categories = [...WISE_BUSINESS_CATEGORIES[firstLevel]] as [string, ...string[]];
-  return z.enum(categories);
 };
 
 export const wiseRouter = createTRPCRouter({
@@ -290,41 +276,26 @@ export const wiseRouter = createTRPCRouter({
       firstLevelCategory: firstLevelCategoryEnum,
       /**
        * Validates the secondLevelCategory based on the selected firstLevelCategory.
-       * Uses a more type-safe approach with proper error messages.
+       * Ensures that the provided secondLevelCategory is one of the valid categories
+       * for the corresponding firstLevelCategory using the getSecondLevelCategories function.
+       * Adds a custom Zod validation error if the category is invalid.
        */
       secondLevelCategory: z.string().superRefine((value, ctx) => {
-        // Get the parent object to access firstLevelCategory
-        const parent = ctx.path.length > 1 
-          ? (ctx.data as { firstLevelCategory?: string })
-          : undefined;
+        // Get the parent object that contains firstLevelCategory
+        const parentPath = ctx.path.slice(0, -1);
+        const parent = ctx.parent as { firstLevelCategory: FirstLevelCategory };
         
-        if (!parent?.firstLevelCategory) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "firstLevelCategory is required to validate secondLevelCategory",
-          });
-          return;
-        }
-
-        // Ensure firstLevelCategory is a valid key
-        if (!(parent.firstLevelCategory in WISE_BUSINESS_CATEGORIES)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Invalid firstLevelCategory: ${parent.firstLevelCategory}`,
-          });
-          return;
-        }
-
-        // Get valid second level categories for the selected first level
-        const firstLevel = parent.firstLevelCategory as FirstLevelCategory;
-        const validSecondLevels = WISE_BUSINESS_CATEGORIES[firstLevel];
-        
-        // Check if the provided value is valid
-        if (!validSecondLevels.includes(value as any)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Invalid secondLevelCategory. Allowed values for ${firstLevel}: ${validSecondLevels.join(", ")}`,
-          });
+        if (parent && parent.firstLevelCategory) {
+          const validSecondLevels = getSecondLevelCategories(parent.firstLevelCategory);
+          
+          // Convert the readonly tuple to a regular array for includes check
+          // or use type assertion to tell TypeScript this is okay
+          if (!validSecondLevels.includes(value as any)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Invalid secondLevelCategory. Allowed values for ${parent.firstLevelCategory}: ${validSecondLevels.join(", ")}`,
+            });
+          }
         }
       }),
       operationalAddresses: z.array(z.object({
