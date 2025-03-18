@@ -19,6 +19,12 @@ type FirstLevelCategory = keyof typeof WISE_BUSINESS_CATEGORIES;
 // Define the type for second level categories (union of all possible values)
 type SecondLevelCategory = typeof WISE_BUSINESS_CATEGORIES[FirstLevelCategory][number];
 
+// Create a type-safe validator for second level categories based on first level
+const createSecondLevelValidator = (firstLevel: FirstLevelCategory) => {
+  const validCategories = WISE_BUSINESS_CATEGORIES[firstLevel];
+  return z.enum(validCategories as [string, ...string[]]);
+};
+
 
 const WISE_BUSINESS_CATEGORIES = {
   "CHARITY": ["CHARITY_NON_PROFIT", "CHARITY_ALL_ACTIVITIES"],
@@ -159,8 +165,19 @@ const firstLevelCategoryEnum = z.enum(Object.keys(WISE_BUSINESS_CATEGORIES) as [
  * @param firstLevel - The first-level business category.
  * @returns An array of second-level business categories, or an empty array if the first-level category is not found.
  */
-const getSecondLevelCategories = (firstLevel: FirstLevelCategory): readonly string[] => {
+const getSecondLevelCategories = (firstLevel: FirstLevelCategory): readonly SecondLevelCategory[] => {
   return firstLevel in WISE_BUSINESS_CATEGORIES ? WISE_BUSINESS_CATEGORIES[firstLevel] : [];
+};
+
+/**
+ * Creates a Zod schema for validating second-level categories based on a first-level category.
+ * 
+ * @param firstLevel - The first-level business category
+ * @returns A Zod schema that validates second-level categories
+ */
+const secondLevelCategorySchema = (firstLevel: FirstLevelCategory) => {
+  const categories = WISE_BUSINESS_CATEGORIES[firstLevel] as [string, ...string[]];
+  return z.enum(categories);
 };
 
 export const wiseRouter = createTRPCRouter({
@@ -270,17 +287,40 @@ export const wiseRouter = createTRPCRouter({
       firstLevelCategory: firstLevelCategoryEnum,
       /**
        * Validates the secondLevelCategory based on the selected firstLevelCategory.
-       * Ensures that the provided secondLevelCategory is one of the valid categories
-       * for the corresponding firstLevelCategory using the getSecondLevelCategories function.
-       * Adds a custom Zod validation error if the category is invalid.
+       * Uses a more type-safe approach with proper error messages.
        */
       secondLevelCategory: z.string().superRefine((value, ctx) => {
-        const firstLevel = ctx.path[ctx.path.length - 2] as { firstLevelCategory?: keyof typeof firstLevelCategoryEnum };
-        const validSecondLevels = getSecondLevelCategories(firstLevel?.firstLevelCategory as keyof typeof firstLevelCategoryEnum);
-        if (!validSecondLevels.includes(value)) {
+        // Get the parent object to access firstLevelCategory
+        const parent = ctx.path.length > 1 
+          ? (ctx.data as { firstLevelCategory?: string })
+          : undefined;
+        
+        if (!parent?.firstLevelCategory) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Invalid secondLevelCategory. Allowed values for ${firstLevel?.firstLevelCategory}: ${validSecondLevels.join(", ")}`,
+            message: "firstLevelCategory is required to validate secondLevelCategory",
+          });
+          return;
+        }
+
+        // Ensure firstLevelCategory is a valid key
+        if (!(parent.firstLevelCategory in WISE_BUSINESS_CATEGORIES)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Invalid firstLevelCategory: ${parent.firstLevelCategory}`,
+          });
+          return;
+        }
+
+        // Get valid second level categories for the selected first level
+        const firstLevel = parent.firstLevelCategory as FirstLevelCategory;
+        const validSecondLevels = WISE_BUSINESS_CATEGORIES[firstLevel];
+        
+        // Check if the provided value is valid
+        if (!validSecondLevels.includes(value as any)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Invalid secondLevelCategory. Allowed values for ${firstLevel}: ${validSecondLevels.join(", ")}`,
           });
         }
       }),
