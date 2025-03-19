@@ -456,3 +456,184 @@
 
 # 2025-02-17 08:41:44.928931
 +n
+
+# 2025-02-18 03:47:45.700517
++/add src/server/api/routers/post.ts
+
+# 2025-02-18 03:47:49.962228
++/add prisma/schema.prisma
+
+# 2025-02-18 03:48:25.505903
++Hey! Good morning hope you are well! I was wondering if you could help me understand what the post route is for?
+
+# 2025-02-22 05:17:01.756834
++n
+
+# 2025-02-22 05:17:34.364037
++/add src/server/api/routers/payment.ts
+
+# 2025-02-24 03:28:57.432577
++y
+
+# 2025-02-24 03:29:19.626554
++n
+
+# 2025-02-24 03:30:21.535513
++Hey! Good morning! Hope you have been well :). I want to start out with a context so we can refer to this conversation in later chats!
+
+# 2025-02-24 05:42:23.551200
++n
+
+# 2025-02-24 05:42:31.985774
++/add context.md
+
+# 2025-02-24 05:52:51.286059
++Hey can you take a look at the context and make some changes to Create Dynamic Personal Profiles Based on currency & Create Dyanmic Bussiness Profikes Based on currency. I need them both to have different inputs based on the nationality of the profile. It has to be accordance to these request fields: Request Fields
++firstNametext (max 30 chars)
++First name (including middle names). Required
++
++lastNametext (max 30 chars)
++Last name. Required
++
++preferredNametext (max 30 chars)
++Preferred first name, if different to the legal first name.
++
++details.firstNameInKanatext (katakana)
++First name in Katakana. Required for from-JPY personal transfers
++
++details.lastNameInKanatext (katakana)
++Last name in Katakana. Required for from-JPY personal transfers
++
++address.addressFirstLinetext
++First line of address. Required
++
++address.citytext
++City. Required
++
++address.countryIso3Codetext
++3 Letter country code (lower case). Required
++
++address.postCodetext
++Postal code
++
++address.stateCode (max 5 chars)text
++State code. Required for US, CA, BR and AU addresses
++
++nationalitytext
++3 Letter country code (lower case)
++
++dateOfBirthyyyy-mm-dd
++Date of birth. Required
++
++externalCustomerIdtext
++An external reference identifier mapping the customer of this profile to your system.
++
++contactDetails.emailemail
++Contact email address. Please speak with your integration account manager for details on how customer communication is handled for your integration. Required
++
++contactDetails.phoneNumbertext
++Contact phone number in international phone number format, example: "+1408XXXXXXX". Please speak with your integration account manager for details on how customer communication is handled for your integration. Required
++
++occupations[n].codetext
++Occupation field code - this field accepts any job or occupation that the customer does, as the only occupation format currently accepted is "FREE_FORM".
++
++occupations[n].formattext
++Occupation field format - the format of the occupation code being submitted. As of now, it only accepts the value "FREE_FORM".
+
+# 2025-02-24 05:53:03.276594
++y
+
+# 2025-02-24 05:53:55.099264
++n
+
+# 2025-02-24 05:54:35.648572
++/add src/server/api/routers/wise.ts
+
+# 2025-02-24 05:54:39.900149
++Hey can you take a look at the context and make some changes to Create Dynamic Personal Profiles Based on currency & Create Dyanmic Bussiness Profikes Based on currency. I need them both to have different inputs based on the nationality of the profile. It has to be accordance to these request fields: Request Fields
++firstNametext (max 30 chars)
++First name (including middle names). Required
++
++lastNametext (max 30 chars)
++Last name. Required
++
++preferredNametext (max 30 chars)
++Preferred first name, if different to the legal first name.
++
++details.firstNameInKanatext (katakana)
++First name in Katakana. Required for from-JPY personal transfers
++
++details.lastNameInKanatext (katakana)
++Last name in Katakana. Required for from-JPY personal transfers
++
++address.addressFirstLinetext
++First line of address. Required
++
++address.citytext
++City. Required
++
++address.countryIso3Codetext
++3 Letter country code (lower case). Required
++
++address.postCodetext
++Postal code
++
++address.stateCode (max 5 chars)text
++State code. Required for US, CA, BR and AU addresses
++
++nationalitytext
++3 Letter country code (lower case)
++
++dateOfBirthyyyy-mm-dd
++Date of birth. Required
++
++externalCustomerIdtext
++An external reference identifier mapping the customer of this profile to your system.
++
++contactDetails.emailemail
++Contact email address. Please speak with your integration account manager for details on how customer communication is handled for your integration. Required
++
++contactDetails.phoneNumbertext
++Contact phone number in international phone number format, example: "+1408XXXXXXX". Please speak with your integration account manager for details on how customer communication is handled for your integration. Required
++
++occupations[n].codetext
++Occupation field code - this field accepts any job or occupation that the customer does, as the only occupation format currently accepted is "FREE_FORM".
++
++occupations[n].formattext
++Occupation field format - the format of the occupation code being submitted. As of now, it only accepts the value "FREE_FORM".
+
+# 2025-02-24 05:59:42.815398
++n
+
+# 2025-02-24 06:37:05.861328
++Hey I love the changes you've made but I'm confused on how ctx is being used for contryRequiresState
+
+# 2025-03-18 03:01:16.958943
++y
+
+# 2025-03-18 03:02:25.034097
++n
+
+# 2025-03-18 03:05:36.699790
++Hey! It's been awhile but I have made some good progress my current project. I need some help using Zod .superRefine with my WISE_Bussiness_CATEGORIES. I'm not sure if I should reformat that object because it is in a read-only state or if I should try can do a work around in the secondLevelCategory input validation.
+
+# 2025-03-18 03:05:45.426056
++y
+
+# 2025-03-18 03:10:29.927110
++I'm getting this error which mean I think have I have switch `WISE_BUSINESS_CATEGORIES`
+
+# 2025-03-18 03:11:00.373183
++I'm getting this error which mean I think have I have change `WISE_BUSINESS_CATEGORIES` to get out of a readonly state:
+
+# 2025-03-18 03:11:10.841545
++I'm getting this error which mean I think have I have change `WISE_BUSINESS_CATEGORIES` to get out of a readonly state:
++
++Conversion of type 'readonly ["CHARITY_NON_PROFIT", "CHARITY_ALL_ACTIVITIES"] | readonly ["CONSULTING_IT_BUSINESS_SERVICES", "ADVERTISING_AND_MARKETING", "ARCHITECTURE", "COMPANY_ESTABLISHMENT_FORMATION_SERVICES", ... 14 more ..., "MAINTENANCE_SERVICES"] | ... 9 more ... | readonly [...]' to type '[string, ...string[]]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
++  The type 'readonly ["OTHER", "OTHER_NOT_LISTED_ABOVE"]' is 'readonly' and cannot be assigned to the mutable type '[string, ...string[]]'.ts(2352)
+
+# 2025-03-18 03:30:32.925024
++I actually think we overcomplecated the problem my main issue is stated below:
++```Property 'parent' does not exist on type 'RefinementCtx'.```
++
++This error occurs in TypeScript when you're trying to access a property called parent on an object of type RefinementCtx, but the RefinementCtx type doesn't have a parent property defined in its type definition.

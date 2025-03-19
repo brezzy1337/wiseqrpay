@@ -13,7 +13,7 @@ const WISE_CURRENCIES = [
 
 const currencyEnum = z.enum(WISE_CURRENCIES);
 
-// Define the type for first level categories
+// Define the type for first level categories;
 type FirstLevelCategory = keyof typeof WISE_BUSINESS_CATEGORIES;
 
 // Define the type for second level categories (union of all possible values)
@@ -24,7 +24,6 @@ const createSecondLevelCategoryValidator = (firstLevel: FirstLevelCategory) => {
   const validCategories = WISE_BUSINESS_CATEGORIES[firstLevel];
   return z.enum(validCategories as [string, ...string[]]);
 }
-
 
 const WISE_BUSINESS_CATEGORIES = {
   "CHARITY": ["CHARITY_NON_PROFIT", "CHARITY_ALL_ACTIVITIES"],
@@ -165,12 +164,11 @@ const firstLevelCategoryEnum = z.enum(Object.keys(WISE_BUSINESS_CATEGORIES) as [
  * @param firstLevel - The first-level business category.
  * @returns An array of second-level business categories, or an empty array if the first-level category is not found.
  */
-const getSecondLevelCategories = (firstLevel: FirstLevelCategory): readonly string[] => {
+const getSecondLevelCategories = (firstLevel: FirstLevelCategory): string[] => {
   return firstLevel in WISE_BUSINESS_CATEGORIES ? WISE_BUSINESS_CATEGORIES[firstLevel] : [];
 };
 
 export const wiseRouter = createTRPCRouter({
-
   createPersonalProfile: publicProcedure
     .input(z.object({
       firstName: z.string().max(30),
@@ -189,7 +187,6 @@ export const wiseRouter = createTRPCRouter({
             // Get the parent object (address) to access countryIso3Code
             const address = ctx.path[ctx.path.length - 2] as { countryIso3Code?: string };
             const countryRequiresState = ['usa', 'can', 'bra', 'aus'];
-
             if (address?.countryIso3Code &&
               countryRequiresState.includes(address.countryIso3Code.toLowerCase()) &&
               !stateCode) {
@@ -282,22 +279,23 @@ export const wiseRouter = createTRPCRouter({
        */
       secondLevelCategory: z.string().superRefine((value, ctx) => {
         // Get the parent object that contains firstLevelCategory
-        const data = ctx.data as { firstLevelCategory?: FirstLevelCategory };
+        const parent = ctx.path[0] as { firstLevelCategory?: FirstLevelCategory };
         
-        if (data && data.firstLevelCategory) {
-          const validSecondLevels = getSecondLevelCategories(data.firstLevelCategory);
+        if (parent && parent.firstLevelCategory) {
+          const validSecondLevels = getSecondLevelCategories(parent.firstLevelCategory);
           
           // Convert the readonly tuple to a regular array for includes check
+          
           // or use type assertion to tell TypeScript this is okay
           if (!validSecondLevels.includes(value as any)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `Invalid secondLevelCategory. Allowed values for ${data.firstLevelCategory}: ${validSecondLevels.join(", ")}`,
+              message: `Invalid secondLevelCategory. Allowed values for ${parent.firstLevelCategory}: ${validSecondLevels.join(", ")}`,
             });
           }
         }
-      }),
-      operationalAddresses: z.array(z.object({
+      }),   
+        operationalAddresses: z.array(z.object({
         addressFirstLine: z.string(),
         city: z.string(),
         countryIso2Code: z.string().length(2),

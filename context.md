@@ -73,31 +73,132 @@ npx prisma migrate dev --name init
 ---
 
 ## **Step 4: Implement Wise API Calls**
-### **tRPC Endpoint: Fetch Account Requirements**
-```typescript
-import { publicProcedure, router } from "../trpc";
-import axios from "axios";
 
-export const wiseRouter = router({
-  getAccountRequirements: publicProcedure
-    .input(z.object({ source: z.string(), target: z.string(), amount: z.number() }))
-    .query(async ({ input }) => {
-      const { data } = await axios.get(`https://api.transferwise.com/v1/account-requirements`, {
-        params: {
-          source: input.source,
-          target: input.target,
-          sourceAmount: input.amount,
+### **tRPC Endpoint: Create Dynamic Personal Profile Based on currency**
+
+```typescript
+createPersonalProfile: publicProcedure
+ .input(z.object({
+      firstName: z.string(),
+      lastName: z.string(),
+      dateOfBirth: z.string(),
+      phoneNumber: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const response = await axios.post(
+        "https://api.wise.com/v2/profiles/personal-profile",
+        {
+          type: "personal",
+          details: input,
         },
-        headers: { Authorization: `Bearer ${process.env.WISE_API_KEY}` },
-      });
-      return data;
+        {
+          headers: {
+            Authorization: `Bearer ${env.WISE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
     }),
-});
 ```
 
 ---
 
+### **tRPC Endpoint: Create Dynamic Bussiness Profile Based on currency**
+
+```typescript
+  createBusinessProfile: publicProcedure
+    .input(z.object({
+      name: z.string(),
+      registrationNumber: z.string(),
+      companyType: z.string(),
+      companyRole: z.string(),
+      descriptionOfBusiness: z.string(),
+      webpage: z.string().url(),
+    }))
+    .mutation(async ({ input }) => {
+      const response = await axios.post(
+        "https://api.wise.com/v2/profiles/business-profile",
+        {
+          type: "business",
+          details: input,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${esnv.WISE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    }),
+});  
+```
+
+---
+
+#### **tRPC Endpoint: Handle Profile Extension Requirements**
+```typescript
+
+  getExtensionRequirements: publicProcedure
+    .input(z.object({
+      profileId: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const response = await axios.get(
+        `https://api.wise.com/v1/profiles/${input.profileId}/extension-requirements`,
+        {
+          headers: {
+            Authorization: `Bearer ${env.WISE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    }),
+
+  updateProfileExtensions: publicProcedure
+    .input(z.object({
+      profileId: z.string(),
+      extensions: z.record(z.any()),
+    }))
+    .mutation(async ({ input }) => {
+      const response = await axios.post(
+        `https://api.wise.com/v1/profiles
+::contentReference[oaicite:0]{index=0}
+ getExtensionRequirements: publicProcedure
+  .input(z.object({ profileId: z.string(), type: z.string() }))
+```
+
+
+<!-- Discovered that Account Requirements are only needed for sending funds not recieving-->
+// ### **tRPC Endpoint: Fetch Account Requirements**
+// ```typescript
+// import { publicProcedure, router } from "../trpc";
+// import axios from "axios";
+
+// export const wiseRouter = router({
+//   getAccountRequirements: publicProcedure
+//     .input(z.object({ source: z.string(), target: z.string(), amount: z.number() }))
+//     .query(async ({ input }) => {
+//       const { data } = await axios.get(`https://api.transferwise.com/v1/account-requirements`, {
+//         params: {
+//           source: input.source,
+//           target: input.target,
+//           sourceAmount: input.amount,
+//         },
+//         headers: { Authorization: `Bearer ${process.env.WISE_API_KEY}` },
+//       });
+//       return data;
+//     }),
+// });
+// ``` 
+
+---
+
+//  The profile created needs to be a recipient for the transfer to be made 
 ### **tRPC Endpoint: Create Recipient**
+
 ```typescript
 createRecipient: publicProcedure
   .input(z.object({ accountHolderName: z.string(), currency: z.string(), details: z.object({ abartn: z.string(), accountNumber: z.string() }) }))
