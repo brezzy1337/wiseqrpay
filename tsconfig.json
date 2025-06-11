@@ -18,10 +18,11 @@
     "lib": ["dom", "dom.iterable", "ES2022"],
     "noEmit": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "jsx": "preserve",
     "plugins": [{ "name": "next" }],
     "incremental": true,
+    "types": ["vitest/globals"],
 
     /* Path Aliases */
     "baseUrl": ".",
@@ -37,6 +38,6 @@
     "**/*.cjs",
     "**/*.js",
     ".next/types/**/*.ts"
-  ],
+, "src/server/tests/wise/samples/aba.jso"  ],
   "exclude": ["node_modules"]
 }

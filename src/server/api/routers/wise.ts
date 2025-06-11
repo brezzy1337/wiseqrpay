@@ -1,17 +1,23 @@
-import { z } from "zod";
+import { z, ZodObject } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import axios from "axios";
-import QRCode from "qrcode";
+// import QRCode from "qrcode";
 import { env } from "~/env";
-import { prisma } from "~/server/api/db";
+// import { prisma } from "~/server/api/db";
 
-const WISE_CURRENCIES = [
-  "AED", "AUD", "BGN", "BRL", "CAD", "CHF", "CLP", "CZK", "DKK", "EUR", "GBP",
-  "HKD", "HRK", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "MXN", "MYR", "NOK",
-  "NZD", "PHP", "PLN", "RON", "SEK", "SGD", "THB", "TRY", "USD", "ZAR"
-] as const;
+// Import types and schemas from the new file
+// For future use to clean up code.
+import {
+//   personalProfileSchema,
+//   businessProfileSchema,
+//   recipientSchema,
+//   transferSchema,
+//   paymentQuerySchema,
+  currencyEnum
+} from "~/types/wiseTypes";
 
-const currencyEnum = z.enum(WISE_CURRENCIES);
+import { dynamicRecipentSchema, WiseRequirementsResponse } from "~/types/schema/dynamicRecipientSchema";
+import { WiseRequirement } from '../../../types/schema/dynamicRecipientSchema';
 
 // Define the type for first level categories;
 type FirstLevelCategory = keyof typeof WISE_BUSINESS_CATEGORIES;
@@ -345,104 +351,245 @@ export const wiseRouter = createTRPCRouter({
           headers: {
             Authorization: `Bearer ${env.WISE_CLIENT_SECRET}`,
             "Content-Type": "application/json",
+           "Accept-Minor-Version": "1",
           },
         }
       );
       return response.data;
     }),
-    
-    createRecipient: publicProcedure
-    .input(z.object({
+
+    // After Creating the Profiles for the Bussiness we can store the profile id in the database along with other data we need for future use.
+    // On the UI side this will be determine the UI and forms the sender will be asked to fill out once scan the code.
+
+    // This will get the requirements for the recipient based on the country the senders bank origins
+    // This is because each countries bank has it's own protocal and systems to interface with.
+    // We will have to grab the target from the database and the user will have to select there banks currency which will the source
+    // getRecipientRequirements: publicProcedure
+    // .input(z.object({
+    //   sourceCurrency: currencyEnum,
+    //   targetCurrency: currencyEnum,
+    //   sourceAmount: z.number(),
+    // }))
+    // .mutation(async ({ input }) => {
+    //   const { data } = await axios.post(
+    //     "https://api.wise.com/v1/requirements",
+    //     {
+    //       sourceCurrency: input.sourceCurrency,
+    //       targetCurrency: input.targetCurrency,
+    //       sourceAmount: input.sourceAmount,
+    //     },
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${env.WISE_CLIENT}`,
+    //         "Content-Type": "application/json",
+    //         "Accept-Minor-Version": "1",
+    //       },
+    //     }
+    //   );
+    //   return data;
+    // }),
+
+    // createRecipient: publicProcedure
+    // .input(z.object({
+    //   accountHolderName: z.string(),
+    //   currency: currencyEnum,
+    //   details: z.object({
+    //     accountNumber: z.string(),
+    //     routingNumber: z.string(),
+    //   })
+    // }))
+    // .mutation(async ({ input }) => {
+    //   const { data: profile } = await axios.get("https://api.wise./v1/profiles", {
+    //     headers: { Authorization: `Bearer ${env.WISE_CLIENT}` },
+    //   });
+    //   const profileId = profile.find((p: { type: string; }) => p.type === "business")?.id || profile[0].id;
+
+    //   const { data } = await axios.post(
+    //     "https://api.wise.com/v1/recipients",
+    //     {
+    //       profile: profileId,
+    //       accountHolderName: input.accountHolderName,
+    //       currency: input.currency,
+    //       type: "aba",
+    //       details: input.details,
+    //     },
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${env.WISE_CLIENT_SECRET}`
+    //       },
+    //     }
+    //   );
+    //   return data;
+    // }),
+
+  // throw new Error(`No requirement for type ${input.type}`);
+  
+createRecipient: publicProcedure
+  .input(z.object({
       accountHolderName: z.string(),
-      currency: currencyEnum,
-      details: z.object({
-        accountNumber: z.string(),
-        routingNumber: z.string(),
-      })
+      sourceCurrency: currencyEnum,
+      targetCurrency: currencyEnum,
+      sourceAmount: z.number(),
+      type: z.string(),
     }))
     .mutation(async ({ input }) => {
 
-      const { data: profile } = await axios.get("https://api.wise./v1/profiles", {
-        headers: { Authorization: `Bearer ${env.WISE_CLIENT}` },
+      // Step 1: Get Requiements for recipients based on source and target currency
+      const response: WiseRequirementsResponse = await axios.get("https://api.wise.com/v1/account-requirements", {
+        params: {
+          source: "EUR",
+          target: "USD",
+          sourceAmount: 1000,
+        },
+        headers: {
+          // Authorization: `Bearer ${env.WISE_API_KEY}`,
+          "Content-Type": "application/json",
+          "Accept-Minor-Version": "1",
+        },
       });
-      const profileId = profile.find((p: { type: string; }) => p.type === "business")?.id || profile[0].id;
 
-      const { data } = await axios.post(
-        "https://api.wise.com/v1/recipients",
-        {
-          profile: profileId,
-          accountHolderName: input.accountHolderName,
-          currency: input.currency,
-          type: "aba",
-          details: input.details,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${env.WISE_CLIENT_SECRET}`
-          },
-        }
-      );
-      return data;
-    }),
+      // Step 2: Validate & Extract Required Field
+      // The requirements object needs to contains a list of types obtained from the response of the wise v1/requirements which will be used to geneate a requirements schema dynamically. 
+      // The type of the recipient is obtained from the input.type which is not corrected it needs to be obtained from the response object
+      // const requirements = data.find((r: any) => r.type === input.type);
 
-  createTransfer: publicProcedure
-    .input(z.object({
-      userId: z.string(),
-      recipientId: z.string(),
-      amount: z.number(),
-      currency: currencyEnum,
-    }))
-    .mutation(async ({ input }) => {
-      // Create transfer in Wise
-      const { data: transferData } = await axios.post(
-        "https://api.wise.com/v1/transfers",
-        {
-          targetAccount: input.recipientId,
-          source: input.currency,
-          target: input.currency,
-          sourceAmount: input.amount || undefined,
-          customerTransactionId: `txn_${Date.now()}`,
-        },
-        {
-          headers: {
-            "Authorization": `Bearer ${env.WISE_CLIENT_SECRET}`,
+      // Step 3: Generate Zod schema dynamically
+      const dynamicSchema = dynamicRecipentSchema(response);
+      // const dynamicSchema = dynamicRecipentSchema(requirements, data);
+
+      // Step 4: Validate frontend form input against schema. This input currently represents a placeholder
+      const result = dynamicSchema.safeParse(input);
+      if (!result.success) {
+        throw new Error(`Invalid input: ${result.error.message}`);
+      } else {
+        console.log("Validated Input:", result.data);
+      }
+
+      const validatedDetails = result.data;
+
+      // Step 4 Alternative with DB intergration: Retrieve stored user input from DB after testing requests
+      
+      // const transaction = await prisma.userTransaction.findFirst({
+      //   where: { userId: input.userId},
+      // })
+       
+      // if (!transaction) throw new Error("No stored user data found");
+
+      // const flattenedDetails = {
+      //   ...transaction.recipientDetails.details,
+      //   "address.country": transaction.recipientDetails.details.address?.country,
+      //   "address.city": transaction.recipientDetails.details.address?.city,
+      //   "address.firstLine": transaction.recipientDetails.details.address?.firstLine,
+      //   "address.postCode": transaction.recipientDetails.details.address?.postCode,
+      // };
+
+      // // Step 5: Validate user input
+      // const validated =  dynamicSchema.safeParse(flattenedDetails);
+      // if (!validated.success) {
+      //   console.error(validated.error.flatten());
+      //   throw new Error("Validation failed");
+      // }
+
+      // const validatedDetails = validated.data;
+
+      // Step 6: Fetch Wise profile ID
+      // Need a way to grab the created profile ID from the user
+      const { data: profiles } = await axios.get("https://api.wise.com/v1/profiles", {
+        headers: {
+            Authorization: `Bearer ${env.WISE_CLIENT}`,
             "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // Generate QR code
-      const qrCode = await QRCode.toDataURL(transferData.payInUrl);
-
-      // Store payment in database
-      const payment = await prisma.payment.create({
-        data: {
-          userId: input.userId,
-          recipientId: input.recipientId,
-          transferId: transferData.id,
-          paymentUrl: transferData.payInUrl,
-          qrCode: qrCode,
-          amount: input.amount,
-
-          currency: input.currency,
-                  },
-      });
-
-      return {
-        ...payment,
-        qrCode,
-      };
-    }),
-    
-  getPayment: publicProcedure
-    .input(z.object({
-      paymentId: z.string(),
-    }))
-    .query(async ({ input }) => {
-      return prisma.payment.findUnique({
-        where: {
-          id: input.paymentId,
+            "Accept-Minor-Version": "1",
         },
       });
-    }),
-});
+
+      const profileId = profiles.find((p: any) => p.type === "business")?.id || profiles[0].id;
+
+      // Step 7: Create the recipent
+      const { data: recipient } = await axios.post(
+        "https://api.wise.com/v1/recipients",
+      {
+        profile: profileId,
+        accountHolderName: validatedDetails.accountHolderName,
+        currency: input.targetCurrency,
+        type: input.type,
+        details: validatedDetails 
+      },
+      {
+        headers: {
+             Authorization: `Bearer ${env.WISE_CLIENT}`,
+            "Content-Type": "application/json",
+            "Accept-Minor-Version": "1",
+        }
+      }
+    );
+          // Step 8: Update transaction in DB
+          // await prisma.userTransaction.update({
+          //   where: { id: transaction.id },
+          //   data: {
+          //     recipientId: recipient.id,
+          //     status: "READY_TO_PAY",
+          //   },
+          // });
+          return recipient;
+        }),
+  })
+  
+  // createTransfer: publicProcedure
+  //   .input(z.object({
+  //     userId: z.string(),
+  //     recipientId: z.string(),
+  //     amount: z.number(),
+  //     currency: currencyEnum,
+  //   }))
+  //   .mutation(async ({ input }) => {
+  //     // Create transfer in Wise
+  //     const { data: transferData } = await axios.post(
+  //       "https://api.wise.com/v1/transfers",
+  //       {
+  //         targetAccount: input.recipientId,
+  //         source: input.currency,
+  //         target: input.currency,
+  //         sourceAmount: input.amount || undefined,
+  //         customerTransactionId: `txn_${Date.now()}`,
+  //       },
+  //       {
+  //         headers: {
+  //           "Authorization": `Bearer ${env.WISE_CLIENT_SECRET}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     // Generate QR code
+  //     const qrCode = await QRCode.toDataURL(transferData.payInUrl);
+
+  //     // Store payment in database
+  //     const payment = await prisma.payment.create({
+  //       data: {
+  //         userId: input.userId,
+  //         recipientId: input.recipientId,
+  //         transferId: transferData.id,
+  //         paymentUrl: transferData.payInUrl,
+  //         qrCode: qrCode,
+  //         amount: input.amount,
+  //         currency: input.currency,
+  //        },
+  //     });
+  //     return {
+  //       ...payment,
+  //       qrCode,
+  //     };
+  //   });
+    
+//   getPayment: publicProcedure
+//     .input(z.object({
+//       paymentId: z.string(),
+//     }))
+//     .query(async ({ input }) => {
+//       return prisma.payment.findUnique({
+//         where: {
+//           id: input.paymentId,
+//         },
+//       });
+//     }),
+// });
