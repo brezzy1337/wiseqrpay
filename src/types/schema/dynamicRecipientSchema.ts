@@ -30,10 +30,11 @@ export type WiseRequirementsResponse = {
  * @returns ZodObject schema for that recipient type * 
  */
 
-// Zod recently Released https://zod.dev/json-schema which may be a more effect way to convert the requirements to a Zod schema.
-// Regardless it seems like this current method is suffiecnt but potentially less abstracted.
-
-// This function is used to generate a Zod schema dynamically based on the requirements from the Wise API. It takes an array of requirements and a type as input and returns a Zod schema for that type.
+/**
+ * Creates a Zod schema from Wise API requirements
+ * @param requirements The full response array from the /v1/requirements endpoint
+ * @returns ZodObject schema for the recipient type
+ */
 export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): ZodObject<any> {
 
     console.log(requirements.requirements);
@@ -114,5 +115,36 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
         }
     }
 
-    return z.object(shape);
+    const zodSchema = z.object(shape);
+    
+    // Convert to JSON Schema using Zod 4's native conversion
+    const jsonSchema = z.toJSONSchema(zodSchema, {
+        target: "draft-2020-12", // Use latest JSON Schema version
+        unrepresentable: "any", // Handle any unrepresentable types gracefully
+    });
+    
+    return {
+        zodSchema,
+        jsonSchema
+    };
+}
+
+/**
+ * Creates a JSON Schema directly from Wise API requirements
+ * @param requirements The full response array from the /v1/requirements endpoint
+ * @returns JSON Schema object
+ */
+export function dynamicRecipientJsonSchema(requirements: WiseRequirementsResponse): any {
+    const { jsonSchema } = dynamicRecipentSchema(requirements);
+    return jsonSchema;
+}
+
+/**
+ * Creates only the Zod schema from Wise API requirements (backward compatibility)
+ * @param requirements The full response array from the /v1/requirements endpoint
+ * @returns ZodObject schema for the recipient type
+ */
+export function dynamicRecipientZodSchema(requirements: WiseRequirementsResponse): ZodObject<any> {
+    const { zodSchema } = dynamicRecipentSchema(requirements);
+    return zodSchema;
 }
