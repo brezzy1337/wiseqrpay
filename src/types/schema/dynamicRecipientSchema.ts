@@ -30,15 +30,20 @@ export type WiseRequirementsResponse = {
  * @returns ZodObject schema for that recipient type * 
  */
 
+// Zod recently Released https://zod.dev/json-schema which may be a more effect way to convert the requirements to a Zod schema.
+// Regardless it seems like this current method is suffiecnt but potentially less abstracted.
 
 // This function is used to generate a Zod schema dynamically based on the requirements from the Wise API. It takes an array of requirements and a type as input and returns a Zod schema for that type.
 export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): ZodObject<any> {
 
-    if (!requirements || requirements.requirements.length === 0) {
+    console.log(requirements.requirements);
+
+    if (!requirements || !requirements.requirements) {
     throw new Error("No requirements found");
   }
 
-    console.dir(requirements, { depth: null });
+    // Console.dir confirms that the requirements are being passed in correctly.
+    // console.dir(requirements, { depth: null });
 
     // if (!requirements.requirements || requirements.requirements.length === 0) {
     //     throw new Error("No requirements found");
@@ -59,6 +64,7 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
 
             if (!group.required) {
                 // The optional() function is throwing a error because it is not typed in typescript. 
+                // Not sure if this error is still relavent
                 validator = z.optional(z.string());
             }
             
@@ -91,6 +97,8 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
 
                 // Length
                 // If there is a min or max length, add it to the validator
+                // TODO: Add a check to make sure that the min and max lengths are not the same.
+                // TODO: Make sure this works.
                 if (group.minLength != null) {
                     validator = validator.min(group.minLength, {
                         message: `${group.key} must be at least ${group.minLength} characters`,
