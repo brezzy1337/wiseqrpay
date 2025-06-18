@@ -1,8 +1,8 @@
 import { z, ZodObject } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc.ts";
 import axios from "axios";
 // import QRCode from "qrcode";
-import { env } from "~/env";
+import { env } from "~/env.mjs";
 // import { prisma } from "~/server/api/db";
 
 // Import types and schemas from the new file
@@ -14,10 +14,10 @@ import {
 //   transferSchema,
 //   paymentQuerySchema,
   currencyEnum
-} from "~/types/wiseTypes";
+} from "~/types/wiseTypes.ts";
 
-import { dynamicRecipentSchema, WiseRequirementsResponse } from "~/types/schema/dynamicRecipientSchema";
-import { WiseRequirement } from '../../../types/schema/dynamicRecipientSchema';
+import { dynamicRecipentSchema, WiseRequirementsResponse } from "~/types/schema/dynamicRecipientSchema.ts";
+// import { WiseRequirement } from '../../../types/schema/dynamicRecipientSchema';
 
 // Define the type for first level categories;
 type FirstLevelCategory = keyof typeof WISE_BUSINESS_CATEGORIES;

@@ -1,93 +1,95 @@
-import { ZodTypeAny, ZodObject, ZodString, ZodEnum, ZodOptional, ZodEffects } from "zod";
+import {
+  ZodObject,
+  ZodEnum,
+  ZodOptional,
+  ZodEffects,
+  ZodString,
+  ZodTypeAny,
+} from "zod";
 import { faker } from "@faker-js/faker";
 
-type MockOpts = { includeOptional?: boolean };
+type Opts = { includeOptional?: boolean };
+
+type RegExpMatchArray = [string] & string[] & {
+    index?: number;
+    input?: string;
+}
 
 export function generateMockInputFromSchema(
   schema: ZodObject<any>,
-  { includeOptional = false }: MockOpts = {}
+  { includeOptional = false }: Opts = {}
 ): Record<string, any> {
-  const mockData: Record<string, any> = {};
+  const mock: Record<string, any> = {};
 
-  for (const [key, rawField] of Object.entries(schema.shape)) {
+  for (const [rawKey, rawField] of Object.entries(schema.shape)) {
+
     let field = rawField as ZodTypeAny;
-    let isOptional = false;
 
-    // Unwrap effects / optional
+    // ── unwrap optional / superRefine layers ──────────────────────────
     while (field instanceof ZodEffects) field = field._def.schema;
     if (field instanceof ZodOptional) {
-      if (!includeOptional) continue;      // skip
+      if (!includeOptional) continue;
       field = field.unwrap();
-      isOptional = true;
     }
 
+    const k = rawKey.toLowerCase();
+
+    // ── ENUMS ─────────────────────────────────────────────────────────
     if (field instanceof ZodEnum) {
-      mockData[key] = field._def.values[0];
+      mock[rawKey] = field._def.values[0];
       continue;
     }
 
+    // ── STRINGS ───────────────────────────────────────────────────────
     if (field instanceof ZodString) {
-      const checks = field._def.checks;
-      const regexCheck = checks.find(c => c.kind === "regex");
-      const min = checks.find(c => c.kind === "min")?.value || 5;
-      const max = checks.find(c => c.kind === "max")?.value || 12;
+      const { checks } = field._def;
+      const regex = checks.find(c => c.kind === "regex")?.regex ?? null;
+      const min   = checks.find(c => c.kind === "min")?.value ?? 4;
+      const max   = checks.find(c => c.kind === "max")?.value ?? 24;
 
-      if (regexCheck) {
-        const regex = regexCheck.regex;
-        
-        // Handle specific regex patterns
-        if (regex.source.includes("@")) {
-          mockData[key] = faker.internet.email();
-        } else if (regex.source === "^\\d{9}$") {
-          mockData[key] = faker.string.numeric(9);
-        } else if (regex.source === "^\\d{5}$") {
-          mockData[key] = faker.string.numeric(5);
-        } else if (key.toLowerCase().includes("abartn") || key.toLowerCase().includes("routing")) {
-          // ABA routing number is 9 digits
-          mockData[key] = faker.string.numeric(9);
-        } else if (key.toLowerCase().includes("accountnumber")) {
-          // Account numbers are typically 10-12 digits
-          mockData[key] = faker.string.numeric(10);
-        } else {
-          // For other regex patterns, try to generate a simple valid string
-          try {
-            // For simple patterns, try to use faker's fromRegExp
-            if (regex.source.length < 50 && !regex.source.includes("\\d+")) {
-              mockData[key] = faker.helpers.fromRegExp(regex);
-            } else {
-              // For complex patterns, fall back to a simple string
-              mockData[key] = faker.string.alphanumeric(min, max);
-            }
-          } catch (err) {
-            mockData[key] = faker.string.alphanumeric(min, max);
-          }
-        }
-      } else {
-        // Heuristic faker field inference by key
-        if (key.toLowerCase().includes("email")) {
-          mockData[key] = faker.internet.email();
-        } else if (key.toLowerCase().includes("city")) {
-          mockData[key] = faker.location.city();
-        } else if (key.toLowerCase().includes("country")) {
-          mockData[key] = "US";
-        } else if (key.toLowerCase().includes("account") && key.toLowerCase().includes("type")) {
-          mockData[key] = "CHECKING";
-        } else if (key.toLowerCase().includes("account") && key.toLowerCase().includes("name")) {
-          mockData[key] = faker.person.fullName();
-        } else if (key.toLowerCase().includes("account")) {
-          mockData[key] = faker.finance.accountNumber();
-        } else if (key.toLowerCase().includes("postcode") || key.toLowerCase().includes("zipcode")) {
-          mockData[key] = faker.location.zipCode();
-        } else if (key.toLowerCase().includes("address") && key.toLowerCase().includes("line")) {
-          mockData[key] = faker.location.streetAddress();
-        } else if (key.toLowerCase() === "legaltype") {
-          mockData[key] = "PRIVATE";
-        } else {
-          mockData[key] = faker.string.alphanumeric(min, max);
-        }
-      }
+      // 1️⃣  KEY-FIRST decision
+      let value: string;
+      if (k.includes("email"))               value = faker.internet.email();
+      else if (k.includes("name"))           value = faker.person.fullName();
+      else if (k.includes("city"))           value = faker.location.city();
+      else if (k.includes("country"))        value = faker.location.countryCode("alpha-2");
+      else if (k.includes("postcode") || k.includes("zipcode"))
+                                             value = faker.location.zipCode();
+      else if (k.includes("address") && k.includes("firstline"))
+                                             value = faker.location.streetAddress();
+      else if (k.includes("abartn") || k.includes("routing"))
+                                             value = faker.string.numeric(9);
+      else if (k.includes("account") && k.includes("number"))
+                                             value = faker.finance.accountNumber(10);
+      else if (k.includes("account") && k.includes("type"))
+                                             value = "CHECKING";
+      else if (k === "legaltype")            value = "PRIVATE";
+      else                                   value = faker.string.alphanumeric({ length: min });
+
+      // 2️⃣  CONSTRAINT-SECOND adjustment
+      // if (regex) {
+      //   // digit-only – ^\d{n}$  or  ^\d{m,n}$
+      //   const digits = regex.source.match(/^\\d\{(\d+)(?:,(\d+))?\}$/);
+      //   if (digits) {
+      //     const len = digits[1] === digits[2] || !digits[2]
+      //       ? parseInt(digits[1]!)
+      //       : faker.number.int({ min: +digits[1]!, max: +digits[2] });
+      //     value = faker.string.numeric(len);
+      //   }
+      //   // fallback to `fromRegExp` if short & safe
+      //   else if (regex.source.length < 50 && !regex.source.includes("\\d+")) {
+      //     try { value = faker.helpers.fromRegExp(regex); } catch {/* keep existing */ }
+      //   }
+      // }
+
+      // ensure min/max length
+      if (value.length < min) value = value.padEnd(min, "a");
+      if (value.length > max) value = value.slice(0, max);
+
+      mock[rawKey] = value;
     }
   }
-
-  return mockData;
+  // Working great for USD to EUR
+  // console.log(mock);
+  return mock;
 }

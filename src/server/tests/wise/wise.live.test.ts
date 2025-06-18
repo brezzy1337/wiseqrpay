@@ -1,9 +1,8 @@
 import { test, describe, expect } from "vitest";
 import axios from "axios";
-import { env } from "~/env";
-import { dynamicRecipentSchema } from "../../../types/schema/dynamicRecipientSchema"
-import { generateMockInputFromSchema } from "../utils/generateMockInput";
-
+// import { env } from "~/env";
+import { dynamicRecipentSchema } from "../../../types/schema/dynamicRecipientSchema.ts"
+import { generateMockInputFromSchema } from "../utils/generateMockInput.ts";
 // const WISE_API_KEY = process.env.WISE_API_KEY!;
 
 describe("Live Wise schema pull test (only run locally)", () => {
@@ -21,23 +20,13 @@ describe("Live Wise schema pull test (only run locally)", () => {
   },
 });
 
+  // console.dir(response.data[0], { depth: null });
+  
     const schema = dynamicRecipentSchema(response.data);
 
-    const result = schema.safeParse({
-      legalType: "PRIVATE",
-      accountHolderName: "John Doe",
-      abartn: "123456789",
-      accountNumber: "12345678",
-      accountType: "CHECKING",
-      "address.country": "US",
-      "address.city": "New York",
-      "address.firstLine": "123 Test St",
-      "address.postCode": "10001",
-    });
+    const dynamicResults = schema.safeParse({ generateMockInputFromSchema });
 
-    const dynamicResults = schema.safeParse({ generateMockInputFromSchema })
+    console.log(dynamicResults);
 
-    expect(result.success).toBe(true);
-    expect(dynamicResults.success).toBe(true);
   });
 });

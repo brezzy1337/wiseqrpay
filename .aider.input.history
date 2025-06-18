@@ -637,3 +637,110 @@
 +```Property 'parent' does not exist on type 'RefinementCtx'.```
 +
 +This error occurs in TypeScript when you're trying to access a property called parent on an object of type RefinementCtx, but the RefinementCtx type doesn't have a parent property defined in its type definition.
+
+# 2025-06-14 08:32:21.732527
++y
+
+# 2025-06-14 08:33:26.551385
++n
+
+# 2025-06-14 08:33:50.443049
++/add src/server/tests/utils/generateMockInput.ts
+
+# 2025-06-14 08:34:30.278856
++Hey Can I share with you a chatGPT chat log?
+
+# 2025-06-14 08:35:13.755100
++y
+
+# 2025-06-14 08:35:17.526076
++n
+
+# 2025-06-14 08:35:20.117399
++Hey Can I share with you a chatGPT chat log?
+
+# 2025-06-14 08:36:06.914535
++y
+
+# 2025-06-14 08:36:08.766080
++Hey Can I share with you a chatGPT chat log?
+
+# 2025-06-14 08:36:22.273618
++/add src/server/tests/utils/generateMockInput.ts
+
+# 2025-06-14 08:36:40.409763
++n
+
+# 2025-06-14 08:36:43.669334
++/add src/server/tests/utils/generateMockInput.ts
+
+# 2025-06-14 08:36:52.174437
++https://chatgpt.com/g/g-p-67bc160c84548191af1b7f51f29a3ef7-development-experts/c/67adc62f-cb14-800b-a08e-da9a81aa2b54?model=o3
+
+# 2025-06-14 08:36:54.593772
++y
+
+# 2025-06-14 08:39:20.552619
++Yeah it not working the resultant is the following
+
+# 2025-06-14 08:39:31.986997
++Yeah it not working the resultant is the following:  legalType: 'PRIVATE',
++  email: 'Kathryne58@hotmail.com',
++  accountHolderName: 'Esteban67@gmail.com',
++  abartn: '^\\ddddddddd$',
++  accountNumber: '^\\ddddd$',
++  accountType: 'CHECKING',
++  'address.country': 'AL',
++  'address.city': '^dAuT2pjAjS4HNA2rvcqzi3PlqwHmkcG1U7r1BARPzOS8uk9DWC551vEA2BxBnX4JCePsaD$',
++  'address.firstLine': '^y3vbsBgZwwtECHQLzMUEo3CZuluZlfvfQlFPdj0ozx1wX4IudDtPr4nXcsF4tWeAzMtgZrtqfk8UhXM6HV4z9gAXN76DXwyXIKI8McF19FDLAMilySFVmSTyqf8EF5I1ayUnwLUCrwhX8OkfiPRF0lRsvLnurjDKNvR0Jf9h42Qu98p33jUqXyraw71iU3nCP9YgZTqK3sW8edwCNJt9TOd4eo$',
++  'address.postCode': '^BTAIUiZK57xKSPXkG$'
++}
++{ success: false, error: [Getter] }
+
+# 2025-06-17 06:54:04.816655
++n
+
+# 2025-06-17 06:54:23.048809
++/add src/types/schema/dynamicRecipientSchema.ts
+
+# 2025-06-17 06:57:29.197368
++Hey I was looking at this code and saw that zod they released a new update for converting JSON Schema. This is what I'm doing right now so I thought I would see what it's like to implement that into my current code:https://zod.dev/json-schema
+
+# 2025-06-17 06:57:31.314954
++y
+
+# 2025-06-17 06:57:58.312251
++q
+
+# 2025-06-17 06:58:06.413570
++n
+
+# 2025-06-17 06:58:09.308644
++help
+
+# 2025-06-17 06:58:11.853889
++/he
+
+# 2025-06-17 06:58:22.065429
++/key
+
+# 2025-06-17 06:59:22.625422
++n
+
+# 2025-06-17 06:59:26.554819
++Hey I was looking at this code and saw that zod they released a new update for converting JSON Schema. This is what I'm doing right now so I thought I would see what it's like to implement that into my current code:https://zod.dev/json-schema
+
+# 2025-06-17 06:59:28.722534
++y
+
+# 2025-06-17 07:00:48.840636
++/run npm install
+
+# 2025-06-17 07:00:48.840730
++/run npm install
+
+# 2025-06-17 07:02:44.634401
++y
+
+# 2025-06-18 06:08:31.834131
++n

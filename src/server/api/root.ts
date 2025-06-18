@@ -1,6 +1,6 @@
 // import { postRouter } from "~/server/api/routers/post";
-import { wiseRouter } from "~/server/api/routers/wise";
-import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { wiseRouter } from "~/server/api/routers/wise.ts";
+import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc.ts";
 
 /**
  * This is the primary router for your server.
