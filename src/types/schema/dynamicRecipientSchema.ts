@@ -1,4 +1,12 @@
 import { z, ZodObject } from "zod";
+import { logZodSchemaShape } from "../../server/tests/utils/zodSchemaLogger.ts";
+import { error } from "console";
+
+
+// Probably will end up replaceing type structure with Zod schemas.
+// Embedded within each schema will be metadata (source, target, amount, etc)
+// Phase 2 will be mapping these schemas to a zod registry 
+// Which will be iterated over checking for previously validated metadata.
 
 export type WiseFieldGroup = {
     key: string;
@@ -13,14 +21,12 @@ export type WiseFieldGroup = {
 export type WiseRequirement = {
     type: string;
     title: string;
-    fields: { 
+    fields: {
         group: WiseFieldGroup[];
     }[];
 };
 
-export type WiseRequirementsResponse = {
-    requirements: WiseRequirement[];
-};
+export type WiseRequirementsResponse = WiseRequirement[];
 
 // So for this function it look like it just group one requriment type, to create a proper Zod schema I need a object or array of requirments. 
 
@@ -35,29 +41,44 @@ export type WiseRequirementsResponse = {
 
 // This function is used to generate a Zod schema dynamically based on the requirements from the Wise API. It takes an array of requirements and a type as input and returns a Zod schema for that type.
 export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): ZodObject<any> {
+   
 
-    console.log(requirements.requirements);
+    if (requirements === undefined || requirements === undefined || requirements.length === 0) {
+        throw new Error("No requirements found");
+    }
 
-    if (!requirements || !requirements.requirements) {
-    throw new Error("No requirements found");
-  }
+    console.log("Available types:", requirements.map(r => r.type));
+
+
+    const requirement = requirements[0];
+    
+    if(requirement === undefined || requirement.fields === undefined || requirement.fields.length === 0) {
+        throw new Error("No requirement found", { cause: `${error}` });
+    }
 
     // Console.dir confirms that the requirements are being passed in correctly.
-    // console.dir(requirements, { depth: null });
+    console.dir(requirement, { depth: null });
 
     // if (!requirements.requirements || requirements.requirements.length === 0) {
     //     throw new Error("No requirements found");
-    
+
     // }
     // const requirement = requirements.requirements.find(r => r.type === type);
-    const requirement = requirements.requirements[0]!;
-    
+
+    // type Record: https://refine.dev/blog/typescript-record-type/#what-is-record-type-in-typescript
     const shape: Record<string, any> = {};
-    
+
     // Loop through each field in the requirement and then into each group in those fields
     // TODO: Make sure that each group has it's required values accounted for.
     // TODO: So far it looks like we just have Regex, minLength, maxLength, and allowedValues but there are many more types of validation that other groups needs.
-    // TODO: Test this schema against all currency combinations.
+
+    // Keep Code in the zod ecosystem as much as possible. This could result in a expanded flexilbity while maintaining the type safety of zod.
+    // TODO: Test how z.infer could be used
+    // TODO: Look into replacing generic types (validator.regex) with zod types (z.regex)
+    // TODO: Instead of a Record<Type> we can potentially use z.registy
+
+    // TODO: Test this schema against all currency combinations and store them in a z.registry?
+
     for (const fields of requirement.fields) {
         for (const group of fields.group) {
             let validator: any;
@@ -67,7 +88,7 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
                 // Not sure if this error is still relavent
                 validator = z.optional(z.string());
             }
-            
+
             // If there are allowed values, use an enum
             if (group.valuesAllowed && Array.isArray(group.valuesAllowed)) {
                 const values = group.valuesAllowed.map(v => v.key);
@@ -82,8 +103,21 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
                     invalid_type_error: `${group.key} must be a string`,
                 });
 
-                // Regex
-                // If there is a regex, add it to the validator
+                // Zod Regex & Length Validator
+                if (group.minLength) {
+                    try {
+                        validator = validator.min(group.minLength);
+                    } catch (error) {
+                        console.error(`Error setting min length for ${group.key}:`, error);
+                    }
+                }
+                if (group.maxLength) {
+                    try {
+                        validator = validator.max(group.maxLength);
+                    } catch (error) {
+                        console.error(`Error setting max length for ${group.key}:`, error);
+                    }
+                }
                 if (group.validationRegexp) {
                     try {
                         const regex = new RegExp(group.validationRegexp);
@@ -94,25 +128,13 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
                         console.warn(`⚠️ Invalid regex ignored for ${group.key}`);
                     }
                 }
-
-                // Length
-                // If there is a min or max length, add it to the validator
-                // TODO: Add a check to make sure that the min and max lengths are not the same.
-                // TODO: Make sure this works.
-                if (group.minLength != null) {
-                    validator = validator.min(group.minLength, {
-                        message: `${group.key} must be at least ${group.minLength} characters`,
-                    });
-                }
-                if (group.maxLength != null) {
-                    validator = validator.max(group.maxLength, {
-                        message: `${group.key} must be at most ${group.maxLength} characters`,
-                    });
-                }
+                
+                // Console and Logger are looking good
+                // console.log(validator);
+                shape[group.key] = validator;
+                // logZodSchemaShape(z.object(shape));
             }
-            shape[group.key] = validator;
         }
     }
-
     return z.object(shape);
 }

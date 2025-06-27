@@ -8,9 +8,7 @@ import abaRequirements from "../wise/samples/aba.json" with { type: "json" };
 import type { WiseRequirementsResponse } from "../../../types/schema/dynamicRecipientSchema.js";
 
 describe("Wise dynamic schema generator", () => {
-  const requirements: WiseRequirementsResponse = {
-    requirements: abaRequirements
-  };
+  const requirements: WiseRequirementsResponse = abaRequirements;
 
   test("should generate a valid Zod schema for ABA", () => {
 
