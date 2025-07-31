@@ -1,17 +1,27 @@
 import "server-only";
 
 import { createHydrationHelpers } from "@trpc/react-query/rsc";
-import { headers } from "next/headers.ts";
+import { headers } from "next/headers";
+
+/**
+* Local Production Env is giving this error:
+* Module not found: Can't resolve 'next/headers.ts'
+* Import map: aliased to module "next" with subpath '/headers.ts' inside of [project]/
+* 
+* next/header is a module not a ts file so removing the `.ts` shouuld fix it.
+**/
+
 import { cache } from "react";
 
-import { createCaller, type AppRouter } from "~/server/api/root.ts";
-import { createTRPCContext } from "~/server/api/trpc.ts";
-import { createQueryClient } from "./query-client.ts";
+import { createCaller, type AppRouter } from "~/server/api/root";
+import { createTRPCContext } from "~/server/api/trpc";
+import { createQueryClient } from "./query-client";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
  * handling a tRPC call from a React Server Component.
  */
+
 const createContext = cache(async () => {
   const heads = new Headers(await headers());
   heads.set("x-trpc-source", "rsc");

@@ -11,7 +11,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { auth } from "~/server/auth/index.ts";
+import { auth } from "~/server/auth/auth.ts";
 import { prisma } from "~/server/api/db.ts";
 
 /**
@@ -26,7 +26,9 @@ import { prisma } from "~/server/api/db.ts";
  *
  * @see https://trpc.io/docs/server/context
  */
+
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  // cookies are auto-detected
   const session = await auth();
 
   return {
@@ -43,6 +45,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
+
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
@@ -76,6 +79,7 @@ export const createCallerFactory = t.createCallerFactory;
  *
  * @see https://trpc.io/docs/router
  */
+
 export const createTRPCRouter = t.router;
 
 /**
@@ -84,6 +88,7 @@ export const createTRPCRouter = t.router;
  * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
  * network latency that would occur in production but not in local development.
  */
+
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 

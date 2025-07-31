@@ -132,7 +132,7 @@ export function dynamicRecipentSchema(requirements: WiseRequirementsResponse): Z
                 // Console and Logger are looking good
                 // console.log(validator);
                 shape[group.key] = validator;
-                // logZodSchemaShape(z.object(shape));
+                logZodSchemaShape(z.object(shape));
             }
         }
     }

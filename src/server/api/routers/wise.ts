@@ -424,11 +424,18 @@ export const wiseRouter = createTRPCRouter({
 
   // throw new Error(`No requirement for type ${input.type}`);
   
+  // I will need a getRecipientRequirements function that will return the requirements for the recipient based on the country the senders bank origins
+
+
 createRecipient: publicProcedure
+    // accountHolderName, sourceCurrency, and type will need to be stored in a database.
+    // This is so that the QR can point to the data location of the database.  
+    // Source Amount and be temporarily stored in the database. I believe wise should hold the recipts. 
   .input(z.object({
       accountHolderName: z.string(),
       sourceCurrency: currencyEnum,
       targetCurrency: currencyEnum,
+      // Lets call this max transaction amount and set it to a default resonable limit. Probably $500.
       sourceAmount: z.number(),
       type: z.string(),
     }))
@@ -468,6 +475,7 @@ createRecipient: publicProcedure
       const validatedDetails = result.data;
 
       // Step 4 Alternative with DB intergration: Retrieve stored user input from DB after testing requests
+      // Store recipient data into Cloud SQL (PostgreSQL) via prisma
       
       // const transaction = await prisma.userTransaction.findFirst({
       //   where: { userId: input.userId},

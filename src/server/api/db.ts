@@ -1,3 +1,6 @@
+// In the T3 stack there is a seperate db folder
+// which is composed of a `index.ts` and `schema.ts` files
+
 import { PrismaClient } from "@prisma/client";
 
 // import { env } from "~/env";
