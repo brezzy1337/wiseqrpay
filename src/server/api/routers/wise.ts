@@ -174,6 +174,8 @@ const getSecondLevelCategories = (firstLevel: FirstLevelCategory): string[] => {
   return firstLevel in WISE_BUSINESS_CATEGORIES ? WISE_BUSINESS_CATEGORIES[firstLevel] : [];
 };
 
+// Its important to remember that vercel expects a Edge adapter in this case being (createNextAPIHandler()) 
+
 export const wiseRouter = createTRPCRouter({
   createPersonalProfile: publicProcedure
     .input(z.object({
@@ -504,7 +506,7 @@ createRecipient: publicProcedure
       // Need a way to grab the created profile ID from the user
       const { data: profiles } = await axios.get("https://api.wise.com/v1/profiles", {
         headers: {
-            Authorization: `Bearer ${env.WISE_CLIENT}`,
+            Authorization: `Bearer ${env.WISE_CLIENT_ID}`,
             "Content-Type": "application/json",
             "Accept-Minor-Version": "1",
         },
@@ -524,7 +526,7 @@ createRecipient: publicProcedure
       },
       {
         headers: {
-             Authorization: `Bearer ${env.WISE_CLIENT}`,
+             Authorization: `Bearer ${env.WISE_CLIENT_ID}`,
             "Content-Type": "application/json",
             "Accept-Minor-Version": "1",
         }

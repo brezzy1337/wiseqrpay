@@ -27,6 +27,7 @@ import { prisma } from "~/server/api/db.ts";
  * @see https://trpc.io/docs/server/context
  */
 
+// TODO: ctx need to include user credentials for middleware requireBusinessAccount
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   // cookies are auto-detected
   const session = await auth();
@@ -106,6 +107,13 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
+const requireBusinessAccount = t.middleware(({ ctx, next }) => {
+  if (!ctx.session?.user?.business) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Business account required' });
+  }
+  return next({ ctx });
+});
+
 /**
  * Public (unauthenticated) procedure
  *
@@ -126,6 +134,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
+  .use(requireBusinessAccount)
   .use(({ ctx, next }) => {
     if (!ctx.session || !ctx.session.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
