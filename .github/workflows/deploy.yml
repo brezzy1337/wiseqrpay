@@ -1,0 +1,94 @@
+name: Deploy to Cloud Run and migrate DB
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  id-token: write
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "GCP_REGION=${{ secrets.GCP_REGION }}" >> $GITHUB_ENV
+          echo "CLOUD_RUN_SERVICE=${{ secrets.CLOUD_RUN_SERVICE }}" >> $GITHUB_ENV
+          echo "CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE_CONNECTION_NAME }}" >> $GITHUB_ENV
+          echo "ARTIFACT_REPO=${{ secrets.ARTIFACT_REPO }}" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO }}/${{ secrets.CLOUD_RUN_SERVICE }}:${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure gcloud defaults
+        run: |
+          gcloud config set project "$GCP_PROJECT_ID"
+          gcloud config set run/region "$GCP_REGION"
+
+      - name: Configure Artifact Registry auth
+        run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+
+      - name: Fetch secrets from Secret Manager
+        uses: google-github-actions/get-secretmanager-secrets@v1
+        with:
+          secrets: |
+            DB_PASSWORD:projects/${{ env.GCP_PROJECT_ID }}/secrets/DB_PASSWORD
+          export_to_environment: true
+
+      - name: Build and push container
+        run: |
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$CLOUD_RUN_SERVICE" \
+            --image "$IMAGE" \
+            --region "$GCP_REGION" \
+            --platform managed \
+            --allow-unauthenticated=false \
+            --add-cloudsql-instances "$CLOUDSQL_INSTANCE" \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest" \
+            --service-account "${{ secrets.RUNTIME_SERVICE_ACCOUNT }}"
+
+      - name: Setup Node for migrations
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefer-offline
+
+      - name: Start Cloud SQL Proxy (Postgres)
+        uses: google-github-actions/cloud-sql-proxy@v1
+        with:
+          instance: ${{ env.CLOUDSQL_INSTANCE }}
+          port: 5432
+          # If using IAM DB Auth for Postgres, uncomment:
+          # auto-iam-authn: true
+
+      - name: Run Prisma migrations
+        env:
+          DATABASE_URL: postgresql://${{ env.DB_USER }}:${DB_PASSWORD}@127.0.0.1:5432/${{ env.DB_NAME }}
+        run: |
+          npx prisma migrate deploy
+
+

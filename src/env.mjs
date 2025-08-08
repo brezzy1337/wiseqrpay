@@ -11,7 +11,15 @@ export const env = createEnv({
     AUTH_SECRET: z.string(),
     
     // Database
-    DATABASE_URL: z.string().url(),
+    // Use string (not URL) so we can support Unix socket DSNs like:
+    // postgresql://user:pass@/db?host=/cloudsql/project:region:instance&sslmode=disable
+    DATABASE_URL: z.string(),
+    
+    // Cloud SQL Connector
+    CLOUD_SQL_CONNECTION_NAME: z.string().optional(), // format: project:region:instance
+    DB_USER: z.string().optional(),
+    DB_PASS: z.string().optional(), 
+    DB_NAME: z.string().optional(),
     
     // Wise API
     WISE_CLIENT_ID: z.string(),
@@ -41,6 +49,10 @@ export const env = createEnv({
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
+    CLOUD_SQL_CONNECTION_NAME: process.env.CLOUD_SQL_CONNECTION_NAME,
+    DB_USER: process.env.DB_USER,
+    DB_PASS: process.env.DB_PASS,
+    DB_NAME: process.env.DB_NAME,
     WISE_CLIENT_ID: process.env.WISE_CLIENT_ID,
     WISE_CLIENT_SECRET: process.env.WISE_CLIENT_SECRET,
     WISE_REDIRECT_URI: process.env.WISE_REDIRECT_URI,

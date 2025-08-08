@@ -108,8 +108,8 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 const requireBusinessAccount = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.user?.business) {
-    throw new TRPCError({ code: 'FORBIDDEN', message: 'Business account required' });
+  if (!ctx.session?.bussiness) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Google business account required' });
   }
   return next({ ctx });
 });
