@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 FROM base AS deps
 WORKDIR /app
 
-# Install dependencies based on lockfile
+# Install dependencies based on lockfile (skip postinstall)
 COPY package.json package-lock.json ./
-RUN npm ci --prefer-offline
+RUN npm ci --prefer-offline --ignore-scripts
 
 FROM deps AS build
 WORKDIR /app
@@ -52,6 +52,7 @@ COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY package.json ./package.json
 COPY prisma ./prisma
+COPY node_modules/.prisma ./node_modules/.prisma
 
 # Prisma needs generated client at runtime
 RUN node -e "require('fs').existsSync('./node_modules/.prisma/client') || process.exit(1)"
