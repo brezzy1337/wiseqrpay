@@ -27,11 +27,11 @@ COPY prisma ./prisma
 COPY src ./src
 COPY public ./public
 COPY next.config.ts ./
+COPY package.json ./
 COPY tsconfig.json ./
 COPY postcss.config.js ./
 COPY tailwind.config.ts ./
 COPY prettier.config.js ./
-COPY next-env.d.ts ./
 
 # Avoid env validation during container build
 ENV SKIP_ENV_VALIDATION=true
@@ -52,7 +52,7 @@ COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY package.json ./package.json
 COPY prisma ./prisma
-COPY node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
 # Prisma needs generated client at runtime
 RUN node -e "require('fs').existsSync('./node_modules/.prisma/client') || process.exit(1)"
