@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 FROM base AS deps
 WORKDIR /app
 
-# Install dependencies based on lockfile (skip postinstall)
+# Install dependencies based on lockfile (include dev deps for build; skip postinstall)
 COPY package.json package-lock.json ./
-RUN npm ci --prefer-offline --ignore-scripts
+RUN npm ci --prefer-offline --ignore-scripts --include=dev
 
 FROM deps AS build
 WORKDIR /app

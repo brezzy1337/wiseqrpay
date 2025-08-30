@@ -1,0 +1,31 @@
+// // This may have utiity assigned the the /server package.json file but seems like it's more of a liability. 
+// {
+//   "extends": "./tsconfig.json",
+//   "compilerOptions": {
+//     "target": "ES2022",
+//     "lib": ["ES2022"],
+//     "module": "CommonJS",
+//     "moduleResolution": "Node",
+//     "outDir": "dist/server",
+//     "rootDir": "src/server",
+//     "baseUrl": ".",
+//     "paths": {
+//       "~/*": ["src/*"],
+//       "~server/*": ["src/server/*"]
+//     },
+//     "strict": true,
+//     "noEmit": false,
+//     "esModuleInterop": true,
+//     "allowSyntheticDefaultImports": true,
+//     "skipLibCheck": true,
+//     "resolveJsonModule": true,
+//     "sourceMap": false,
+//     "declaration": false, 
+//     "removeComments": true,
+//     "newLine": "lf",
+//     "incremental": true,
+//     "tsBuildInfoFile": ".tsbuildinfo.server"
+//   },
+//   "include": ["src/server/**/*"],
+//   "exclude": ["node_modules", "src/app/**/*", "dist", ".next"]
+// }

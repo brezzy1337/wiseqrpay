@@ -12,7 +12,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth/auth.ts";
-import { prisma } from "~/server/api/db.ts";
+import { getPrismaClient } from "~/server/api/db.ts";
 
 /**
  * 1. CONTEXT
@@ -31,6 +31,7 @@ import { prisma } from "~/server/api/db.ts";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   // cookies are auto-detected
   const session = await auth();
+  const prisma = await getPrismaClient();
 
   return {
     prisma,
@@ -107,6 +108,12 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
+// Ensures a Prisma client is present on context for all procedures
+const dbMiddleware = t.middleware(async ({ ctx, next }) => {
+  const prisma = ctx.prisma ?? (await getPrismaClient());
+  return next({ ctx: { ...ctx, prisma } });
+});
+
 const requireBusinessAccount = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.bussiness) {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'Google business account required' });
@@ -121,7 +128,7 @@ const requireBusinessAccount = t.middleware(({ ctx, next }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure.use(timingMiddleware);
+export const publicProcedure = t.procedure.use(timingMiddleware).use(dbMiddleware);
 
 /**
  * Protected (authenticated) procedure
@@ -134,6 +141,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
+  .use(dbMiddleware)
   .use(requireBusinessAccount)
   .use(({ ctx, next }) => {
     if (!ctx.session || !ctx.session.user) {
