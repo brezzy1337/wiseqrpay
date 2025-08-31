@@ -1,0 +1,44 @@
+{
+  "name": "@wiseqr/secure-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server/standalone.ts",
+    "build": "tsc -p tsconfig.server.json && prisma generate",
+    "start": "node dist/server/standalone.js",
+    "docker": "docker build -f src/server/Dockerfile -t $IMAGE .",
+    "deploy": "gcloud run deploy $SERVICE --image $IMAGE --region $REGION --allow-unauthenticated --set-env-vars INSTANCE_CONNECTION_NAME=$INSTANCE --set-secrets WISE_TOKEN=wise_api_token:latest,JWT_SIGN_SECRET=jwt_sign_secret:latest,DB_PASSWORD=db_password:latest",
+    "db:generate": "prisma migrate dev",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "npx tsx scripts/seed-database.ts",
+    "build:server": "tsc -p tsconfig.server.json",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@trpc/server": "^11.0.0-rc.446",
+    "zod": "^3.25.7",
+    "superjson": "^2.2.1",
+    "cors": "^2.8.5",
+    "axios": "^1.7.9",
+    "@google-cloud/cloud-sql-connector": "^1.8.2",
+    "google-auth-library": "^9.14.2",
+    "@prisma/client": "^6.3.1",
+    "pg": "^8.12.0",
+    "qrcode": "^1.5.4",
+    "next-auth": "^5.0.0-beta.29",
+    "@auth/prisma-adapter": "^2.7.2"
+  },
+  "devDependencies": {
+    "prisma": "^6.3.1",
+    "@types/node": "^20.14.10",
+    "tsx": "^4.15.7",
+    "typescript": "^5.5.3",
+    "vitest": "^3.1.4",
+    "@repo/typescript-config": "*"
+  },
+  "prisma": {
+    "schema": "../../prisma/schema.prisma"
+  }
+}
