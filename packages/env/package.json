@@ -1,5 +1,5 @@
 {
-  "name": "@acme/validators",
+  "name": "@acme/env",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@t3-oss/env-core": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -47,11 +47,12 @@
   },
   "globalEnv": [
     "POSTGRES_URL",
-    "AUTH_DISCORD_ID",
-    "AUTH_DISCORD_SECRET",
     "AUTH_REDIRECT_PROXY_URL",
     "AUTH_SECRET",
-    "PORT"
+    "PORT",
+    "WISE_CLIENT_ID",
+    "WISE_CLIENT_SECRET",
+    "WISE_REDIRECT_URL"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",

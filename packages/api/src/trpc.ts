@@ -7,11 +7,14 @@
  * The pieces you will need to use are documented accordingly near the end
  */
 import { initTRPC, TRPCError } from "@trpc/server";
+import axios from "axios";
+import { eq } from "drizzle-orm";
 import superjson from "superjson";
 import { z, ZodError } from "zod/v4";
 
 import type { Auth } from "@acme/auth";
 import { db } from "@acme/db/client";
+import { wiseSession as WiseSessionTable } from "@acme/db/schema";
 
 /**
  * 1. CONTEXT
@@ -26,18 +29,88 @@ import { db } from "@acme/db/client";
  * @see https://trpc.io/docs/server/context
  */
 
+export type CookieSameSite = "lax" | "strict" | "none";
+
+export interface CookieOptions {
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: CookieSameSite;
+  path?: string;
+  maxAge?: number; // seconds
+  domain?: string;
+}
+
+const serializeCookie = (
+  name: string,
+  value: string,
+  options: CookieOptions = {},
+) => {
+  const segments: string[] = [
+    `${encodeURIComponent(name)}=${encodeURIComponent(value)}`,
+  ];
+
+  if (options.maxAge !== undefined) {
+    const maxAge = Math.max(0, Math.floor(options.maxAge));
+    segments.push(`Max-Age=${maxAge}`);
+  }
+  if (options.domain) segments.push(`Domain=${options.domain}`);
+  if (options.path) segments.push(`Path=${options.path}`);
+  else segments.push("Path=/");
+
+  const sameSite = options.sameSite ?? "lax";
+  const sameSiteToken =
+    sameSite === "none" ? "None" : sameSite === "strict" ? "Strict" : "Lax";
+  segments.push(`SameSite=${sameSiteToken}`);
+
+  if (options.httpOnly !== false) segments.push("HttpOnly");
+  if (options.secure !== false) segments.push("Secure");
+
+  return segments.join("; ");
+};
+
 export const createTRPCContext = async (opts: {
   headers: Headers;
   auth: Auth;
+  req: Request;
+  res: Response;
 }) => {
   const authApi = opts.auth.api;
   const session = await authApi.getSession({
     headers: opts.headers,
   });
+  const setCookieHeaders: string[] = [];
+  const setCookie = (name: string, value: string, options?: CookieOptions) => {
+    setCookieHeaders.push(serializeCookie(name, value, options));
+  };
+
+  // Parse inbound cookies to initialize per-request user preferences
+  const cookieHeader = opts.headers.get("cookie") ?? "";
+  const cookieMap: Record<string, string> = {};
+  if (cookieHeader) {
+    for (const pair of cookieHeader.split(/;\s*/)) {
+      const idx = pair.indexOf("=");
+      if (idx > 0) {
+        const key = decodeURIComponent(pair.slice(0, idx));
+        const val = decodeURIComponent(pair.slice(idx + 1));
+        cookieMap[key] = val;
+      }
+    }
+  }
+
+  const user = {
+    targetCurrency: cookieMap["__Host-Currency"] as string | undefined,
+    regCode: cookieMap["__Host-regCode"] as string | undefined,
+  } as { targetCurrency: string; regCode: string };
+  const wiseSessionId = cookieMap["__Host-session"] as string | undefined;
+
   return {
     authApi,
     session,
     db,
+    setCookie,
+    setCookieHeaders,
+    user,
+    wiseSessionId,
   };
 };
 /**
@@ -123,6 +196,121 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+/**
+ * Wise-protected (requires Wise session cookie) procedure
+ * Loads the Wise session row into context as `wiseSession`.
+ */
+export const wiseProtectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(async ({ ctx, next }) => {
+    const sessionId = ctx.wiseSessionId;
+    if (!sessionId) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const rows = await ctx.db
+      .select()
+      .from(WiseSessionTable)
+      .where(eq(WiseSessionTable.id, sessionId))
+      .limit(1);
+    let wiseSession = rows[0];
+    if (!wiseSession) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    // Token refresh framework
+    interface WiseTokenResponse {
+      access_token: string;
+      token_type: string;
+      refresh_token: string;
+      expires_in: number;
+      expires_at: number; // epoch seconds
+      refresh_expires_at: number; // epoch seconds
+      refresh_token_expires_in: number;
+      scope?: string;
+      created_at: number; // epoch seconds
+    }
+
+    const toDate = (epochSeconds: number) => new Date(epochSeconds * 1000);
+    const nowMs = Date.now();
+    const accessExpiresMs = new Date(wiseSession.expires_at).getTime();
+    const needsRefresh = accessExpiresMs <= nowMs + 60_000; // refresh if expired or expiring in 60s
+
+    if (needsRefresh) {
+      try {
+        const res = await axios.post<WiseTokenResponse>(
+          "https://api.sandbox.transferwise.tech/oauth/token",
+          new URLSearchParams({
+            grant_type: "refresh_token",
+            refresh_token: wiseSession.refreshToken,
+          }),
+          {
+            auth: {
+              username: process.env.WISE_CLIENT_ID ?? "",
+              password: process.env.WISE_CLIENT_SECRET ?? "",
+            },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          },
+        );
+
+        const refreshed = res.data;
+        const refreshExpiresAt = toDate(refreshed.refresh_expires_at);
+
+        await ctx.db
+          .update(WiseSessionTable)
+          .set({
+            accessToken: refreshed.access_token,
+            refreshToken: refreshed.refresh_token,
+            expires_in: refreshed.expires_in,
+            expires_at: toDate(refreshed.expires_at),
+            refresh_expires_at: refreshExpiresAt,
+            refresh_token_expires_in: refreshed.refresh_token_expires_in,
+            scope: refreshed.scope,
+            // created_at remains original issuance time
+          })
+          .where(eq(WiseSessionTable.id, sessionId));
+
+        // Extend session cookie TTL to match refresh lifetime remaining
+        const maxAgeSeconds = Math.max(
+          0,
+          Math.floor((refreshExpiresAt.getTime() - Date.now()) / 1000),
+        );
+        ctx.setCookie("__Host-session", sessionId, {
+          sameSite: "lax",
+          path: "/",
+          maxAge: maxAgeSeconds || 60 * 60 * 24,
+        });
+
+        // Update in-memory session for downstream handlers
+        wiseSession = {
+          ...wiseSession,
+          accessToken: refreshed.access_token,
+          refreshToken: refreshed.refresh_token,
+          expires_in: refreshed.expires_in,
+          expires_at: toDate(refreshed.expires_at),
+          refresh_expires_at: refreshExpiresAt,
+          refresh_token_expires_in: refreshed.refresh_token_expires_in,
+          scope: refreshed.scope,
+        } as typeof wiseSession;
+      } catch {
+        // If refresh fails, revoke session
+        await ctx.db
+          .delete(WiseSessionTable)
+          .where(eq(WiseSessionTable.id, sessionId));
+        ctx.setCookie("__Host-session", "", { path: "/", maxAge: 0 });
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+    }
+
+    return next({
+      ctx: {
+        wiseSession,
       },
     });
   });

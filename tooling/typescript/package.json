@@ -2,6 +2,10 @@
   "name": "@acme/tsconfig",
   "private": true,
   "version": "0.1.0",
+  "exports": {
+    "./base.json": "./base.json",
+    "./internal-package.json": "./internal-package.json"
+  },
   "files": [
     "*.json"
   ]

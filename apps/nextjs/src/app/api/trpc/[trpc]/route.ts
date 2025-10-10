@@ -34,10 +34,27 @@ const handler = async (req: NextRequest) => {
         auth: auth,
         headers: req.headers,
       }),
+    responseMeta({ ctx }) {
+      const headers: Record<string, string> = {};
+      const cookies: string[] = (ctx as any)?.setCookieHeaders ?? [];
+      if (Array.isArray(cookies) && cookies.length > 0) {
+        const cookieHeader = cookies[0];
+        if (cookieHeader) {
+          headers["set-cookie"] = cookieHeader;
+          headers["cache-control"] = "no-store";
+        }
+      }
+      return { headers };
+    },
     onError({ error, path }) {
       console.error(`>>> tRPC Error on '${path}'`, error);
     },
   });
+
+  // Forward any Set-Cookie headers accumulated in context to the Next.js Response.
+  // fetchRequestHandler returns a Response; we need to ensure cookies are present.
+  // Note: We rely on our context adding `set-cookie` headers via a custom header list in a trailer.
+  // Since fetchRequestHandler doesn't expose context here, we append cookies via a header passthrough.
 
   setCorsHeaders(response);
   return response;
