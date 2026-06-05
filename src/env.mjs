@@ -9,7 +9,10 @@ export const env = createEnv({
   server: {
     // NextAuth
     AUTH_SECRET: z.string(),
-    
+    // Google OAuth — Auth.js v5 auto-reads these for the Google provider.
+    AUTH_GOOGLE_ID: z.string(),
+    AUTH_GOOGLE_SECRET: z.string(),
+
     // Database
     // Use string (not URL) so we can support Unix socket DSNs like:
     // postgresql://user:pass@/db?host=/cloudsql/project:region:instance&sslmode=disable
@@ -54,6 +57,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
+    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     CLOUD_SQL_CONNECTION_NAME: process.env.CLOUD_SQL_CONNECTION_NAME,
     DB_USER: process.env.DB_USER,
