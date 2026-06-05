@@ -1,0 +1,19 @@
+# Terraform state (never commit)
+*.tfstate
+*.tfstate.*
+
+# Terraform working directory (provider binaries — not the lock file)
+.terraform/
+
+# Variable files with real secrets (keep terraform.tfvars.example — its suffix is .example, not .tfvars)
+*.tfvars
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Override files (local overrides)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

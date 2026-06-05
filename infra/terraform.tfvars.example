@@ -1,0 +1,42 @@
+# Copy this file to terraform.tfvars (gitignored) and fill in real values before applying.
+# Run: cp terraform.tfvars.example terraform.tfvars
+
+# ---- Required (no defaults) ----
+
+# Your GCP project ID (e.g. "my-gcp-project-123456")
+project_id = "YOUR_GCP_PROJECT_ID"
+
+# Artifact Registry image URI — must be fully qualified with tag.
+# Use a placeholder (e.g. us-docker.pkg.dev/cloudrun/container/hello) for the
+# first apply (bootstrapping), then re-apply with the real image after pushing.
+image = "asia-southeast1-docker.pkg.dev/YOUR_GCP_PROJECT_ID/wiseqrpay/wiseqrpay:latest"
+
+# Auth.js v5 secret — generate with: openssl rand -base64 32
+auth_secret = "REPLACE_WITH_OPENSSL_RAND_BASE64_32_OUTPUT"
+
+# Google OAuth 2.0 Web client credentials.
+# Create at: https://console.cloud.google.com/apis/credentials
+# Add the Authorized redirect URI from the `oauth_redirect_uri` Terraform output.
+auth_google_id     = "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+auth_google_secret = "GOCSPX-YOUR_GOOGLE_OAUTH_CLIENT_SECRET"
+
+# ---- Optional (sensible defaults shown) ----
+
+# GCP region — Asia-Southeast1 (Singapore) is close to ASEAN merchants
+# region = "asia-southeast1"
+
+# Cloud Run service name (also used as Artifact Registry repo name)
+# service_name = "wiseqrpay"
+
+# Cloud SQL machine tier
+# db_tier = "db-f1-micro"
+
+# Postgres database name
+# db_name = "wiseqrpay"
+
+# Postgres user name
+# db_user = "wiseqrpay"
+
+# Wise integration mode: "mock" = deterministic QR deep-link, no Wise token needed
+# Set to "live" and add WISE_API_TOKEN to switch to real Wise Sandbox.
+# wise_mode = "mock"
