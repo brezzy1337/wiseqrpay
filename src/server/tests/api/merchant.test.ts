@@ -114,12 +114,13 @@ function makePrisma(overrides?: {
   };
 }
 
-function buildCaller(
-  session: FakeSession | null,
-  prisma: FakePrisma,
-) {
+function buildCaller(session: FakeSession | null, prisma: FakePrisma) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-  const caller = createCaller({ prisma, session, headers: new Headers() } as any);
+  const caller = createCaller({
+    prisma,
+    session,
+    headers: new Headers(),
+  } as any);
   return caller;
 }
 
@@ -198,7 +199,9 @@ describe("merchant.createPayment", () => {
     });
 
     // Must return exactly these three keys.
-    expect(Object.keys(result).sort()).toEqual(["id", "payUrl", "qrDataUrl"].sort());
+    expect(Object.keys(result).sort()).toEqual(
+      ["id", "payUrl", "qrDataUrl"].sort(),
+    );
 
     // payUrl is the deterministic sandbox deep-link from mockWise.
     expect(typeof result.payUrl).toBe("string");
@@ -209,6 +212,22 @@ describe("merchant.createPayment", () => {
 
     // payment.create was called (persistence happened).
     expect(paymentCreate).toHaveBeenCalledOnce();
+
+    // Assert the persisted payload mapping — catches field-mapping regressions
+    // (e.g. the deliberate transferId number->string conversion, currency, status).
+    const created = paymentCreate.mock.calls[0]?.[0] as {
+      data: Record<string, unknown>;
+    };
+    expect(created.data).toMatchObject({
+      merchantId: "merchant_1",
+      amount: 100,
+      currency: "THB",
+      paymentUrl: result.payUrl,
+      qrCode: result.qrDataUrl,
+      status: "incoming_payment_waiting",
+    });
+    expect(typeof created.data.transferId).toBe("string");
+    expect(created.data.transferId).toMatch(/^\d+$/);
 
     // id comes from the persisted payment row.
     expect(result.id).toBe(fakePayment.id);
