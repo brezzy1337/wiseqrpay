@@ -1,6 +1,8 @@
 resource "google_service_account" "runtime" {
   account_id   = "${var.service_name}-runtime"
   display_name = "${var.service_name} Cloud Run Runtime"
+
+  depends_on = [google_project_service.iam]
 }
 
 resource "google_project_iam_member" "runtime_cloudsql" {

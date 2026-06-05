@@ -98,6 +98,13 @@ resource "google_cloud_run_v2_service" "main" {
     google_secret_manager_secret_version.auth_secret,
     google_secret_manager_secret_version.auth_google_id,
     google_secret_manager_secret_version.auth_google_secret,
+    # Cloud Run v2 validates at deploy time that the runtime SA can read each
+    # referenced secret. IAM propagation is async, so the accessor grants must
+    # exist before the service is created or the first apply fails permission-denied.
+    google_secret_manager_secret_iam_member.runtime_database_url,
+    google_secret_manager_secret_iam_member.runtime_auth_secret,
+    google_secret_manager_secret_iam_member.runtime_auth_google_id,
+    google_secret_manager_secret_iam_member.runtime_auth_google_secret,
   ]
 }
 

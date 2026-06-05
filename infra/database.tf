@@ -3,8 +3,15 @@ resource "random_password" "db" {
   special = false
 }
 
+# Cloud SQL reserves a deleted instance's name for ~1 week, which would 409 a
+# re-apply after `terraform destroy`. A random suffix keeps teardown/re-create
+# clean. connection_name is read dynamically, so dependents need no change.
+resource "random_id" "db_suffix" {
+  byte_length = 4
+}
+
 resource "google_sql_database_instance" "main" {
-  name             = var.service_name
+  name             = "${var.service_name}-${random_id.db_suffix.hex}"
   database_version = "POSTGRES_16"
   region           = var.region
 
