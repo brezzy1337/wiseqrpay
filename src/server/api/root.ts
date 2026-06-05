@@ -1,5 +1,5 @@
 // import { postRouter } from "~/server/api/routers/post";
-import { wiseRouter } from "~/server/api/routers/wise.ts";
+import { merchantRouter } from "~/server/api/routers/merchant.ts";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc.ts";
 
 /**
@@ -9,7 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc.ts";
  */
 export const appRouter = createTRPCRouter({
   // post: postRouter,
-  wiseAPI: wiseRouter,
+  merchant: merchantRouter,
 });
 
 // export type definition of API

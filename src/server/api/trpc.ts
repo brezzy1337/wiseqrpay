@@ -12,7 +12,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth/auth.ts";
-import { prisma } from "~/server/api/db.ts";
+import { prisma } from "~/server/api/prisma.ts";
 
 /**
  * 1. CONTEXT
@@ -27,7 +27,6 @@ import { prisma } from "~/server/api/db.ts";
  * @see https://trpc.io/docs/server/context
  */
 
-// TODO: ctx need to include user credentials for middleware requireBusinessAccount
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   // cookies are auto-detected
   const session = await auth();
@@ -107,13 +106,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
-const requireBusinessAccount = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.bussiness) {
-    throw new TRPCError({ code: 'FORBIDDEN', message: 'Google business account required' });
-  }
-  return next({ ctx });
-});
-
 /**
  * Public (unauthenticated) procedure
  *
@@ -134,9 +126,8 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
-  .use(requireBusinessAccount)
   .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
+    if (!ctx.session?.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({

@@ -21,10 +21,16 @@ export const env = createEnv({
     DB_PASS: z.string().optional(), 
     DB_NAME: z.string().optional(),
     
-    // Wise API
-    WISE_CLIENT_ID: z.string(),
-    WISE_CLIENT_SECRET: z.string(),
-    WISE_REDIRECT_URI: z.string().url(),
+    // Wise API (demo path): single sandbox token, default to mock so the app
+    // runs with an empty .env. WISE_MODE flips mock <-> live.
+    WISE_MODE: z.enum(["mock", "live"]).default("mock"),
+    WISE_API_TOKEN: z.string().optional(),
+
+    // Legacy Wise OAuth vars — optional so the empty-.env demo boots. Only the
+    // frozen wiseAPI router still references these; the demo path does not.
+    WISE_CLIENT_ID: z.string().optional(),
+    WISE_CLIENT_SECRET: z.string().optional(),
+    WISE_REDIRECT_URI: z.string().url().optional(),
     
     // Environment
     NODE_ENV: z
@@ -53,6 +59,8 @@ export const env = createEnv({
     DB_USER: process.env.DB_USER,
     DB_PASS: process.env.DB_PASS,
     DB_NAME: process.env.DB_NAME,
+    WISE_MODE: process.env.WISE_MODE,
+    WISE_API_TOKEN: process.env.WISE_API_TOKEN,
     WISE_CLIENT_ID: process.env.WISE_CLIENT_ID,
     WISE_CLIENT_SECRET: process.env.WISE_CLIENT_SECRET,
     WISE_REDIRECT_URI: process.env.WISE_REDIRECT_URI,
