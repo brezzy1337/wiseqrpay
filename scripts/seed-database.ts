@@ -14,6 +14,7 @@ async function main() {
     // Clear existing data (optional - be careful in production!)
     console.log('🧹 Cleaning existing data...')
     await prisma.payment.deleteMany()
+    await prisma.merchant.deleteMany()
     await prisma.session.deleteMany()
     await prisma.account.deleteMany()
     await prisma.user.deleteMany()
@@ -34,8 +35,8 @@ async function main() {
       }
     })
 
-    // Personal user (regular Gmail)
-    const personalUser = await prisma.user.create({
+    // Personal user (regular Gmail) — no merchant, represents a traveler/payer
+    await prisma.user.create({
       data: {
         id: 'personal-user-1', 
         name: 'Jane Personal',
@@ -47,14 +48,28 @@ async function main() {
     })
 
     console.log(`✅ Created business user: ${businessUser.email}`)
-    console.log(`✅ Created personal user: ${personalUser.email}`)
+    console.log('✅ Created personal user: jane@gmail.com')
 
-    // Create mock payments for business user
-    console.log('💳 Creating mock payments...')
-    
-    const payment1 = await prisma.payment.create({
+    // Create a demo merchant owned by the business user
+    console.log('🏪 Creating demo merchant...')
+    const merchant = await prisma.merchant.create({
       data: {
+        id: 'merchant-demo-1',
+        name: 'Acme Coffee Shop',
+        payoutAccount: 'john@acmecorp.com',
+        targetCurrency: 'SGD',
+        targetCountry: 'SG',
         userId: businessUser.id,
+      }
+    })
+    console.log(`✅ Created merchant: ${merchant.name}`)
+
+    // Create mock payments for the demo merchant
+    console.log('💳 Creating mock payments...')
+
+    await prisma.payment.create({
+      data: {
+        merchantId: merchant.id,
         recipientId: 'recipient-123',
         transferId: 'transfer-456',
         paymentUrl: 'https://wise.com/pay/abc123',
@@ -65,11 +80,9 @@ async function main() {
       }
     })
 
-    const payment2 = await prisma.payment.create({
+    await prisma.payment.create({
       data: {
-        userId: businessUser.id,
-        recipientId: 'recipient-789',
-        transferId: 'transfer-101',
+        merchantId: merchant.id,
         paymentUrl: 'https://wise.com/pay/def456',
         amount: 75.50,
         currency: 'EUR',
@@ -77,24 +90,25 @@ async function main() {
       }
     })
 
-    console.log(`✅ Created ${2} mock payments`)
+    console.log('✅ Created 2 mock payments')
 
     // Create a mock post
-    const post = await prisma.post.create({
+    await prisma.post.create({
       data: {
         title: 'Welcome to WiseQRPay!',
         content: 'This is a test post to verify database connectivity.'
       }
     })
 
-    console.log(`✅ Created mock post: ${post.title}`)
+    console.log('✅ Created mock post: Welcome to WiseQRPay!')
 
     // Summary
     console.log('\n🎉 Database seeding completed successfully!')
     console.log('📊 Summary:')
-    console.log(`   - Users: 2 (1 business, 1 personal)`)
-    console.log(`   - Payments: 2`)
-    console.log(`   - Posts: 1`)
+    console.log('   - Users: 2 (1 business/merchant owner, 1 personal/traveler)')
+    console.log('   - Merchants: 1')
+    console.log('   - Payments: 2 (traveler payments, userId=null)')
+    console.log('   - Posts: 1')
 
   } catch (error) {
     console.error('❌ Database seeding failed:', error)
