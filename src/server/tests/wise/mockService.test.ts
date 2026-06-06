@@ -7,7 +7,7 @@
  */
 
 import { afterEach, describe, expect, test } from "vitest";
-import { mockWise } from "../../wise/mock.ts";
+import { mockWise } from "~/server/wise/mock.ts";
 
 afterEach(() => {
   delete process.env.WISE_FORCE_FAILURE;
@@ -44,9 +44,38 @@ describe("mockWise.createQuote", () => {
     expect(quote.id.length).toBeGreaterThan(0);
   });
 
+  test("returns numeric sourceAmount, rate of 1.0, and a parseable ISO expirationTime", async () => {
+    const quote = await mockWise.createQuote(quoteInput);
+    expect(typeof quote.sourceAmount).toBe("number");
+    expect(typeof quote.rate).toBe("number");
+    expect(quote.rate).toBe(1.0);
+    expect(typeof quote.expirationTime).toBe("string");
+    expect(Number.isNaN(Date.parse(quote.expirationTime))).toBe(false);
+  });
+
   test("rejects when WISE_FORCE_FAILURE is 'true'", async () => {
     process.env.WISE_FORCE_FAILURE = "true";
     await expect(mockWise.createQuote(quoteInput)).rejects.toThrow();
+  });
+});
+
+describe("mockWise.createRecipient", () => {
+  test("echoes currency, accountHolderName, type, and details from the input", async () => {
+    const recipient = await mockWise.createRecipient(recipientInput);
+    expect(recipient.currency).toBe(recipientInput.currency);
+    expect(recipient.accountHolderName).toBe(recipientInput.accountHolderName);
+    expect(recipient.type).toBe(recipientInput.type);
+    expect(recipient.details).toEqual(recipientInput.details);
+  });
+
+  test("returns a numeric id", async () => {
+    const recipient = await mockWise.createRecipient(recipientInput);
+    expect(typeof recipient.id).toBe("number");
+  });
+
+  test("rejects when WISE_FORCE_FAILURE is 'true'", async () => {
+    process.env.WISE_FORCE_FAILURE = "true";
+    await expect(mockWise.createRecipient(recipientInput)).rejects.toThrow();
   });
 });
 
@@ -70,6 +99,13 @@ describe("mockWise.createTransfer", () => {
       /^https:\/\/sandbox\.transferwise\.tech\/transfer\//,
     );
     expect(transfer.payInUrl).toMatch(/\/pay$/);
+  });
+
+  test("returns a numeric id and a 'incoming_payment_waiting' status", async () => {
+    const input = await makeTransferInput();
+    const transfer = await mockWise.createTransfer(input);
+    expect(typeof transfer.id).toBe("number");
+    expect(transfer.status).toBe("incoming_payment_waiting");
   });
 
   test("is deterministic — same input yields same id and same payInUrl", async () => {
