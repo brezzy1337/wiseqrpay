@@ -42,6 +42,13 @@ variable "wise_mode" {
   description = "Wise integration mode: 'mock' for deterministic deep-link QR (demo), 'live' for real Wise Sandbox"
   type        = string
   default     = "mock"
+
+  # Mirror the app's env.mjs z.enum(["mock","live"]) so a bad value fails at
+  # plan time, not at container startup.
+  validation {
+    condition     = contains(["mock", "live"], var.wise_mode)
+    error_message = "wise_mode must be \"mock\" or \"live\"."
+  }
 }
 
 variable "auth_secret" {

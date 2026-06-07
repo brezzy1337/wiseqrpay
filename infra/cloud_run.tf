@@ -105,6 +105,10 @@ resource "google_cloud_run_v2_service" "main" {
     google_secret_manager_secret_iam_member.runtime_auth_secret,
     google_secret_manager_secret_iam_member.runtime_auth_google_id,
     google_secret_manager_secret_iam_member.runtime_auth_google_secret,
+    # The Cloud SQL client role is checked at instance-connect time, not deploy
+    # time, but order it here too for symmetry with the secret bindings so a
+    # re-derived depends_on stays correct.
+    google_project_iam_member.runtime_cloudsql,
   ]
 }
 

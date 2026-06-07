@@ -102,12 +102,10 @@ breaking secret/DB access at runtime while `terraform apply` stays green.
 
 ---
 
-*Generated from the `infra-mcp/` Terraform (`service_account.tf`, `secrets.tf`,
-`cloud_run.tf`, `database.tf`). This is the kept arm; the `infra-mcp-blind/`
-comparison arm was removed after verifying the two had byte-for-byte equivalent
-effective IAM.*
+*Generated from this module's Terraform (`service_account.tf`, `secrets.tf`,
+`cloud_run.tf`, `database.tf`).*
 
-*Non-IAM hardening note: `database.tf` does not set `ssl_mode` on the Cloud SQL
-instance (it relies on the provider default). The retired blind arm pinned
-`ssl_mode = "ENCRYPTED_ONLY"` to force TLS — worth porting over if you want
-connections TLS-enforced. This is a data-path setting, not an IAM binding.*
+*Non-IAM hardening note: `database.tf` sets `ssl_mode = "ENCRYPTED_ONLY"` on the
+Cloud SQL instance, enforcing TLS on the public IP. The app reaches the database
+over the Cloud SQL Auth Proxy unix socket (also TLS by design), so connections
+are encrypted on every path. This is a data-path setting, not an IAM binding.*
