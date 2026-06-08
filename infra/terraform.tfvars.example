@@ -40,3 +40,8 @@ auth_google_secret = "GOCSPX-YOUR_GOOGLE_OAUTH_CLIENT_SECRET"
 # Wise integration mode: "mock" = deterministic QR deep-link, no Wise token needed
 # Set to "live" and add WISE_API_TOKEN to switch to real Wise Sandbox.
 # wise_mode = "mock"
+
+# Public service URL for Auth.js OAuth callbacks (AUTH_URL). Leave empty on the
+# first apply; after the service exists, set to the `service_uri` output and
+# re-apply, then add "<that URL>/api/auth/callback/google" to the OAuth client.
+# auth_url = "https://wiseqrpay-xxxxxxxx-as.a.run.app"

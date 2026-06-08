@@ -100,6 +100,25 @@ docker push "$REPO/wiseqrpay:latest"
 terraform apply -var "image=$REPO/wiseqrpay:latest"
 ```
 
+### 5b. Set the public URL for Auth.js (`AUTH_URL`) and re-apply
+
+Auth.js can't infer its public origin behind Cloud Run's proxy, so it must be told
+explicitly — otherwise OAuth callbacks are built against `localhost:8080` and Google
+sign-in fails. Now that the service exists, read its URL and set `auth_url`:
+
+```bash
+terraform output -raw service_uri   # e.g. https://wiseqrpay-xxxx-as.a.run.app
+```
+
+Set `auth_url` to that value in `terraform.tfvars`, then re-apply:
+
+```bash
+terraform apply -var "image=$REPO/wiseqrpay:latest"
+```
+
+This adds the `AUTH_URL` env var to a new revision. (`auth_url` is empty by default, so
+the first bootstrap apply works before the URL is known.)
+
 ### 6. Register the OAuth redirect URI
 
 Terraform outputs the URI you must register. Get it:
