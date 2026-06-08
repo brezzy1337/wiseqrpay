@@ -22,6 +22,13 @@ RUN npm ci --prefer-offline --ignore-scripts
 FROM deps AS build
 WORKDIR /app
 
+# The `deps` stage installed prod-only deps (base sets NODE_ENV=production, which
+# makes `npm ci` omit devDependencies). `next build` needs the build tooling
+# (tailwindcss, postcss, typescript) which lives in devDependencies, so reinstall
+# WITH dev deps here. The runner stage still copies the lean prod-only node_modules
+# from `deps`, so this does not bloat the runtime image.
+RUN npm ci --prefer-offline --ignore-scripts --include=dev
+
 # Copy source and generate Prisma client, then build Next
 COPY prisma ./prisma
 COPY src ./src

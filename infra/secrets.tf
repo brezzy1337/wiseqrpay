@@ -10,11 +10,15 @@ resource "google_secret_manager_secret" "database_url" {
 
 resource "google_secret_manager_secret_version" "database_url" {
   secret = google_secret_manager_secret.database_url.id
+  # `localhost` is a REQUIRED placeholder host, not a real target: Prisma's
+  # connection-string parser rejects an empty host ("empty host in database
+  # URL"), unlike libpq. The real connection uses the unix socket from the
+  # `host=/cloudsql/...` param, which takes over at connect time.
   # sslmode=disable applies ONLY to the local unix-socket leg to the Cloud SQL
   # Auth Proxy (IPC — TLS is meaningless there). The proxy itself terminates TLS
   # to the instance, and database.tf enforces ssl_mode=ENCRYPTED_ONLY on the IP
   # leg. Do not "fix" this to require — it would break the socket connection.
-  secret_data = "postgresql://${var.db_user}:${random_password.db.result}@/${var.db_name}?host=/cloudsql/${google_sql_database_instance.main.connection_name}&sslmode=disable"
+  secret_data = "postgresql://${var.db_user}:${random_password.db.result}@localhost/${var.db_name}?host=/cloudsql/${google_sql_database_instance.main.connection_name}&sslmode=disable"
 }
 
 resource "google_secret_manager_secret" "auth_secret" {

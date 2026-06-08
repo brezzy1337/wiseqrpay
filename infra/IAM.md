@@ -8,6 +8,7 @@ whole picture splits into two questions:
   account, granted exactly two powers (read secrets, connect to the DB).
 
 Everything else follows from those two.
+https://app.notion.com/p/digitalspacedev/Infrastructure-Diagram-378e1857a8098010a7abdc913cc8fba2?source=copy_link
 
 ```mermaid
 flowchart TB
