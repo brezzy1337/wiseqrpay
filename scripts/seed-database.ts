@@ -59,6 +59,7 @@ async function main() {
         payoutAccount: 'john@acmecorp.com',
         targetCurrency: 'SGD',
         targetCountry: 'SG',
+        businessType: 'Restaurant',
         userId: businessUser.id,
       }
     })

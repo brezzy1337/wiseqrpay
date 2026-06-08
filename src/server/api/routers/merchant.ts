@@ -30,6 +30,10 @@ export const merchantRouter = createTRPCRouter({
         payoutAccount: z.string().min(1),
         targetCurrency: z.string().min(1),
         targetCountry: z.string().min(1),
+        // Optional so the create contract stays backward-compatible: the frontend
+        // can send it (or not) and older callers/seeds remain valid. NOT the frozen
+        // WISE_BUSINESS_CATEGORIES taxonomy — a plain free-form/enum label.
+        businessType: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -42,6 +46,7 @@ export const merchantRouter = createTRPCRouter({
           payoutAccount: input.payoutAccount,
           targetCurrency: input.targetCurrency,
           targetCountry: input.targetCountry,
+          businessType: input.businessType,
           userId: ctx.session.user.id,
         },
       });
