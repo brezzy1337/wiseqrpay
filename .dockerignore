@@ -1,0 +1,27 @@
+# Build context excludes — keep the image build fast and clean.
+# The Dockerfile uses explicit COPY (not COPY . .), so these are excluded
+# from the context upload only; nothing here is needed inside the image.
+node_modules
+.next
+.git
+.github
+npm-debug.log*
+
+# Local tooling / infra / docs that never belong in the app image
+infra
+infra-mcp
+infra-mcp-blind
+.claude
+.mcp.json
+scope
+
+# Env + secrets (never bake into an image)
+.env
+.env.*
+*.tfvars
+*.tfstate*
+
+# Editor / OS cruft
+.vscode
+.idea
+.DS_Store

@@ -17,6 +17,11 @@ resource "google_sql_database_instance" "main" {
 
   settings {
     tier = var.db_tier
+    # Pin ENTERPRISE: the shared-core db-f1-micro tier is only valid on the
+    # ENTERPRISE edition. Without this, the project defaulted the instance to
+    # ENTERPRISE_PLUS, which rejects db-f1-micro ("Invalid Tier ... for
+    # ENTERPRISE_PLUS Edition").
+    edition = "ENTERPRISE"
 
     ip_configuration {
       ipv4_enabled = true
