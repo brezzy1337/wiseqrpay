@@ -38,6 +38,18 @@ resource "google_cloud_run_v2_service" "main" {
         value = "true"
       }
 
+      # Auth.js needs its public origin to build correct OAuth callback URLs. Behind
+      # Cloud Run's proxy, `next start` can't infer it (it falls back to localhost:8080),
+      # so set AUTH_URL explicitly once the service URL is known. Emitted only when
+      # auth_url is non-empty so the first (URL-unknown) apply still works.
+      dynamic "env" {
+        for_each = var.auth_url != "" ? [1] : []
+        content {
+          name  = "AUTH_URL"
+          value = var.auth_url
+        }
+      }
+
       # Secret-backed environment variables
       env {
         name = "DATABASE_URL"

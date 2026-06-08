@@ -68,3 +68,9 @@ variable "auth_google_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "auth_url" {
+  description = "Public base URL of the deployed service for Auth.js (AUTH_URL), e.g. https://wiseqrpay-xxxx-as.a.run.app. Leave empty on the first (bootstrap) apply; set to the service_uri output and re-apply so OAuth callbacks use the real host instead of localhost:8080."
+  type        = string
+  default     = ""
+}
