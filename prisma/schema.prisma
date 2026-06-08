@@ -13,6 +13,7 @@ model Merchant {
     payoutAccount  String
     targetCurrency String
     targetCountry  String
+    businessType   String?
     createdAt      DateTime  @default(now())
     userId         String
     user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
