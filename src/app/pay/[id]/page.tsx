@@ -13,15 +13,17 @@ export default async function PayPage({
 
   if (!merchant) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="flex flex-col items-center gap-4 px-4 text-center">
-          <h1 className="text-3xl font-bold">Merchant not found</h1>
-          <p className="text-white/70">
+      <main className="flex min-h-screen items-center justify-center bg-white px-5 py-10">
+        <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-semibold text-wise-content">
+            Merchant not found
+          </h1>
+          <p className="text-wise-secondary">
             This payment link is invalid or has expired.
           </p>
           <Link
             href="/"
-            className="rounded-full bg-white/10 px-8 py-3 font-semibold transition hover:bg-white/20"
+            className="text-sm font-medium text-wise-forest underline underline-offset-4"
           >
             Back home
           </Link>
@@ -31,16 +33,18 @@ export default async function PayPage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-gradient-to-b from-[#2e026d] to-[#15162c] px-4 py-16 text-white">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight">
-          Pay {merchant.name}
-        </h1>
-        <p className="text-white/70">
-          Paid in {merchant.targetCurrency} via Wise
-        </p>
+    <main className="flex min-h-screen flex-col items-center bg-white px-5 py-10">
+      <div className="w-full max-w-md">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-wise-content">
+            Pay {merchant.name}
+          </h1>
+          <p className="text-wise-secondary">
+            Paid in {merchant.targetCurrency} via Wise
+          </p>
+        </div>
+        <PayForm merchantId={merchant.id} currency={merchant.targetCurrency} />
       </div>
-      <PayForm merchantId={merchant.id} />
     </main>
   );
 }

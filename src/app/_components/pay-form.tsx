@@ -2,26 +2,36 @@
 
 import { useState } from "react";
 
+import { Button } from "~/app/_components/ui/Button";
+import { Card } from "~/app/_components/ui/Card";
 import { api } from "~/trpc/react";
 
-export default function PayForm({ merchantId }: { merchantId: string }) {
+export default function PayForm({
+  merchantId,
+  currency,
+}: {
+  merchantId: string;
+  currency: string;
+}) {
   const [amount, setAmount] = useState("");
 
   const pay = api.merchant.createPayment.useMutation();
 
   if (pay.data) {
     return (
-      <div className="flex w-full max-w-md flex-col items-center gap-6 rounded-xl bg-white/10 p-8">
-        <h2 className="text-2xl font-bold">Scan or tap to pay</h2>
+      <Card className="flex flex-col items-center gap-5">
+        <h2 className="text-2xl font-semibold tracking-tight text-wise-content">
+          Scan or tap to pay
+        </h2>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={pay.data.qrDataUrl}
           alt="Wise payment QR code"
-          className="h-56 w-56 rounded-lg bg-white p-2"
+          className="h-60 w-60 rounded-2xl border border-wise-hairline p-2"
         />
         <a
           href={pay.data.payUrl}
-          className="rounded-full bg-[hsl(280,100%,70%)] px-10 py-3 font-semibold text-[#15162c] transition hover:opacity-90"
+          className="w-full rounded-full bg-wise-green px-6 py-3.5 text-center text-base font-semibold text-wise-forest transition hover:brightness-95"
         >
           Open Wise payment
         </a>
@@ -31,49 +41,58 @@ export default function PayForm({ merchantId }: { merchantId: string }) {
             pay.reset();
             setAmount("");
           }}
-          className="text-sm text-white/60 underline hover:text-white"
+          className="text-sm text-wise-tertiary underline"
         >
           Pay a different amount
         </button>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const parsed = Number(amount);
-        if (!Number.isFinite(parsed) || parsed <= 0) return;
-        pay.mutate({ merchantId, amount: parsed });
-      }}
-      className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-white/10 p-8"
-    >
-      <label className="flex flex-col gap-1 text-sm">
-        Amount
-        <input
-          type="number"
-          min="0"
-          step="any"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-          placeholder="0.00"
-          className="rounded-md bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:bg-white/20 focus:outline-none"
-        />
-      </label>
-
-      <button
-        type="submit"
-        disabled={pay.isPending}
-        className="rounded-full bg-[hsl(280,100%,70%)] px-10 py-3 font-semibold text-[#15162c] transition hover:opacity-90 disabled:opacity-50"
+    <Card>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const parsed = Number(amount);
+          if (!Number.isFinite(parsed) || parsed <= 0) return;
+          pay.mutate({ merchantId, amount: parsed });
+        }}
       >
-        {pay.isPending ? "Creating payment…" : "Pay with Wise"}
-      </button>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="amount"
+            className="text-sm font-medium text-wise-secondary"
+          >
+            Amount
+          </label>
+          <div className="flex items-center rounded-xl border border-wise-border bg-white px-4 py-3 focus-within:border-wise-forest">
+            <span className="mr-2 text-lg font-semibold text-wise-tertiary">
+              {currency}
+            </span>
+            <input
+              id="amount"
+              type="number"
+              min="0"
+              step="any"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              placeholder="0.00"
+              className="w-full bg-transparent text-2xl font-semibold text-wise-content outline-none placeholder:text-wise-tertiary"
+            />
+          </div>
+        </div>
 
-      {pay.error && (
-        <p className="text-sm text-red-300">{pay.error.message}</p>
-      )}
-    </form>
+        <Button type="submit" fullWidth disabled={pay.isPending}>
+          {pay.isPending ? "Creating payment…" : "Pay with Wise"}
+        </Button>
+
+        {pay.error ? (
+          <p className="text-sm text-wise-negative">{pay.error.message}</p>
+        ) : null}
+      </form>
+    </Card>
   );
 }

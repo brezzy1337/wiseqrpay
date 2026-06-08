@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { signIn } from "next-auth/react"
- 
+import { signIn } from "next-auth/react";
+
 export default function SignIn() {
   return (
     <form
       action={async () => {
-        "use server"
-        await signIn("google")
+        "use server";
+        await signIn("google");
       }}
     >
       <button type="submit">Signin with Google</button>
     </form>
-  )
-} 
+  );
+}

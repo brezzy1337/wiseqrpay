@@ -8,17 +8,20 @@ export default async function DashboardPage() {
 
   if (!session?.user) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="flex flex-col items-center gap-6 px-4 text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight">
+      <main className="flex min-h-screen items-center justify-center bg-white px-5 py-10">
+        <div className="flex w-full max-w-md flex-col items-center gap-6 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-wise-neutral text-4xl">
+            🔐
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-wise-content">
             Merchant dashboard
           </h1>
-          <p className="text-white/70">
+          <p className="text-wise-secondary">
             Sign in to onboard your shop and generate a WiseQRPay QR.
           </p>
           <Link
             href="/api/auth/signin"
-            className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
+            className="w-full rounded-full bg-wise-green px-6 py-3.5 text-center text-base font-semibold text-wise-forest transition hover:brightness-95"
           >
             Sign in with Google
           </Link>
@@ -28,16 +31,13 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-gradient-to-b from-[#2e026d] to-[#15162c] px-4 py-16 text-white">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight">
-          Welcome, {session.user.name ?? "merchant"}
-        </h1>
-        <p className="text-white/70">
-          Onboard a shop and get a tourist-ready QR in seconds.
+    <main className="flex min-h-screen flex-col items-center bg-white px-5 py-10">
+      <div className="w-full max-w-md">
+        <p className="mb-6 text-sm text-wise-tertiary">
+          Signed in as {session.user.name ?? "merchant"}
         </p>
+        <MerchantOnboarding />
       </div>
-      <MerchantOnboarding />
     </main>
   );
 }
