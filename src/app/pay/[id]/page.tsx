@@ -42,7 +42,7 @@ export default async function PayPage({
     <main className="flex min-h-screen flex-col items-center bg-white px-0 pb-10">
       {/* Bold forest header band — the brand "wow" before the (light) amount form. */}
       <ForestSurface
-        className="w-full px-5 pb-10 pt-12 text-center"
+        className="print-hide w-full px-5 pb-10 pt-12 text-center"
         contentClassName="mx-auto flex w-full max-w-md flex-col items-center gap-3"
       >
         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-wise-green">

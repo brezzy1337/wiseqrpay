@@ -48,6 +48,10 @@ body {
     box-shadow: none !important;
     border: none !important;
   }
+  /* Force-keep the QR tile in print even if an ancestor is hidden. */
+  .print-keep {
+    display: block !important;
+  }
   .tapestry-grain::after,
   .print-no-decor {
     display: none !important;

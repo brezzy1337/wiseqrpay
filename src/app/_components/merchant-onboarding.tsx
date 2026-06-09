@@ -87,7 +87,7 @@ export default function MerchantOnboarding() {
             Pay {merchant.name} with WiseQRPay
           </p>
 
-          <span className="rounded-md bg-wise-neutral px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-wise-forest">
+          <span className="rounded-full bg-wise-neutral px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-wise-forest">
             Powered by Wise
           </span>
 

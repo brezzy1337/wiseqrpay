@@ -51,9 +51,11 @@ export default async function Home() {
           </p>
         </div>
 
+        {/* Sits outside the .stagger group (different layout slot), so apply the
+            reveal delay inline rather than via the `.stagger > *` selector. */}
         <div
           className="flex flex-col gap-4 motion-safe:animate-fade-up"
-          style={staggerStyle(300)}
+          style={{ animationDelay: "300ms" }}
         >
           <Link
             href="/dashboard"
