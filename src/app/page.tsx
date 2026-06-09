@@ -59,14 +59,20 @@ export default async function Home() {
         >
           <Link
             href="/dashboard"
-            className={buttonClasses({ fullWidth: true, className: "text-center" })}
+            className={buttonClasses({
+              fullWidth: true,
+              className: "text-center",
+            })}
           >
             Get started
           </Link>
           {session?.user ? (
             <p className="text-center text-sm text-white/60">
               Signed in as {session.user.name} ·{" "}
-              <Link href="/api/auth/signout" className="text-wise-green underline">
+              <Link
+                href="/api/auth/signout"
+                className="text-wise-green underline"
+              >
                 Sign out
               </Link>
             </p>

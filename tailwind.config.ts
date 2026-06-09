@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "var(--font-geist-sans)", ...fontFamily.sans],
+        sans: ["Inter", ...fontFamily.sans],
         // Loud all-caps display face. Archivo Black is a free OFL stand-in for
         // Wise Sans (proprietary) — used ONLY for big feature headlines.
         display: ['"Archivo Black"', "Inter", ...fontFamily.sans],
