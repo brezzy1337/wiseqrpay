@@ -7,7 +7,10 @@ import { Button } from "~/app/_components/ui/Button";
 import { Card } from "~/app/_components/ui/Card";
 import { CurrencyRow } from "~/app/_components/ui/CurrencyRow";
 import { CURRENCIES } from "~/app/_components/ui/currencies";
+import { Display } from "~/app/_components/ui/Display";
+import { ForestSurface } from "~/app/_components/ui/ForestSurface";
 import { ProgressBar } from "~/app/_components/ui/ProgressBar";
+import { QrTile } from "~/app/_components/ui/QrTile";
 import { Select } from "~/app/_components/ui/Select";
 import { TextInput } from "~/app/_components/ui/TextInput";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -56,60 +59,72 @@ export default function MerchantOnboarding() {
 
   // ---------- QR result screen ----------
   if (merchant) {
-    const handle = merchant.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+    // Latin slug for the @handle; fall back to the id so non-Latin shop names
+    // (Thai, Vietnamese, …) don't collapse to a bare "@".
+    const handle =
+      merchant.name.toLowerCase().replace(/[^a-z0-9]+/g, "") ||
+      merchant.id.slice(0, 8);
     return (
-      <div className="overflow-hidden rounded-3xl border border-wise-hairline bg-white shadow-sm">
-        <div className="bg-wise-forest px-6 py-4 text-center">
-          <span className="text-lg font-extrabold uppercase tracking-wide text-wise-green">
-            Wise QRPay
+      <div className="print-clean overflow-hidden rounded-wise-xl border border-wise-hairline bg-white shadow-lg motion-safe:animate-pop">
+        {/* Bold forest header — the "wow" frame (hidden in print). */}
+        <ForestSurface
+          className="print-hide px-6 pb-7 pt-6 text-center"
+          contentClassName="flex flex-col items-center gap-3"
+        >
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-wise-green">
+            WiseQRPay
           </span>
-        </div>
+          <Display tone="green" size="md">
+            You&apos;re
+            <br />
+            tourist-ready
+          </Display>
+        </ForestSurface>
+
         <div className="flex flex-col items-center gap-5 p-6">
-          <span className="rounded-md bg-wise-neutral px-2 py-1 text-xs font-medium text-wise-forest">
+          {/* Print-only heading so the counter printout is self-explanatory. */}
+          <p className="hidden text-center font-display text-xl uppercase tracking-tight text-wise-content print:block">
+            Pay {merchant.name} with WiseQRPay
+          </p>
+
+          <span className="rounded-md bg-wise-neutral px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-wise-forest">
             Powered by Wise
           </span>
-          {qrDataUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={qrDataUrl}
-              alt={`Pay QR code for ${merchant.name}`}
-              className="h-60 w-60 rounded-2xl border border-wise-hairline p-2"
-            />
-          ) : (
-            <div className="flex h-60 w-60 items-center justify-center text-wise-tertiary">
-              Generating QR…
-            </div>
-          )}
+
+          <QrTile
+            src={qrDataUrl}
+            alt={`Pay QR code for ${merchant.name}`}
+            className="print-keep"
+          />
           <div className="text-center">
             <p className="text-xl font-semibold text-wise-content">
               {merchant.name}
             </p>
-            <span className="mt-1 inline-block rounded-full bg-wise-forest px-3 py-1 text-sm font-medium text-wise-green">
+            {/* Forest pill on screen; print as plain ink so it doesn't flood. */}
+            {/* Presentational identifier — neutral badge, not a link affordance. */}
+            <span className="mt-1 inline-block rounded-full bg-wise-neutral px-3 py-1 text-sm font-medium text-wise-forest print:bg-transparent print:px-0">
               @{handle}
             </span>
           </div>
           <a
             href={`/pay/${merchant.id}`}
-            className="text-sm font-medium text-wise-forest underline underline-offset-4"
+            className="print-hide text-sm font-semibold text-wise-forest underline underline-offset-4"
           >
             Open pay page
           </a>
           <Button
+            className="print-hide"
             fullWidth
             variant="secondary"
             type="button"
             onClick={() => window.print()}
           >
-            Print
+            Print QR for the counter
           </Button>
           <button
             type="button"
-            onClick={() => {
-              setMerchant(null);
-              setQrDataUrl(null);
-              setStep(0);
-            }}
-            className="text-sm text-wise-tertiary underline"
+            onClick={resetAll}
+            className="print-hide text-sm text-wise-tertiary underline"
           >
             Onboard another shop
           </button>
@@ -120,6 +135,22 @@ export default function MerchantOnboarding() {
 
   const selectedCurrency =
     CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
+
+  // Clear every field so "Onboard another shop" starts clean rather than
+  // pre-filling the previous merchant's stale details.
+  function resetAll() {
+    setMerchant(null);
+    setQrDataUrl(null);
+    setStep(0);
+    setBusinessType("Retail");
+    setBusinessName("");
+    setCity("");
+    setAddress("");
+    setPostCode("");
+    setCurrencyCode(CURRENCIES[0]?.code ?? "SGD");
+    setAccountHolder("");
+    setBankName("");
+  }
 
   function handleSubmit() {
     if (!selectedCurrency) return;
@@ -149,9 +180,9 @@ export default function MerchantOnboarding() {
             setStep(1);
           }}
         >
-          <h2 className="text-2xl font-semibold tracking-tight text-wise-content">
+          <Display as="h2" tone="content" size="sm">
             Enter your business details
-          </h2>
+          </Display>
           <Select
             label="Type of Business"
             name="businessType"
@@ -205,9 +236,9 @@ export default function MerchantOnboarding() {
             handleSubmit();
           }}
         >
-          <h2 className="text-2xl font-semibold tracking-tight text-wise-content">
+          <Display as="h2" tone="content" size="sm">
             Enter your account details
-          </h2>
+          </Display>
 
           <div className="flex flex-col gap-2">
             <span className="text-sm font-medium text-wise-secondary">

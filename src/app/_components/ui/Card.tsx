@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 
+/** Light surface card. For bold Forest Green feature surfaces use `ForestSurface`. */
 export function Card({
   children,
   className = "",
@@ -9,7 +10,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-3xl border border-wise-hairline bg-white p-6 shadow-sm ${className}`}
+      className={`rounded-wise-xl border border-wise-hairline bg-white p-6 shadow-sm ${className}`}
     >
       {children}
     </div>

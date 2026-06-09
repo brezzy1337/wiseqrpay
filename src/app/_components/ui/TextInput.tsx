@@ -25,7 +25,7 @@ export function TextInput({
       <input
         id={inputId}
         name={name}
-        className={`rounded-xl border bg-white px-4 py-3 text-wise-content outline-none placeholder:text-wise-tertiary focus:border-wise-forest ${error ? "border-wise-negative" : "border-wise-border"} ${className}`}
+        className={`rounded-wise-sm border bg-white px-4 py-3.5 text-wise-content outline-none transition placeholder:text-wise-tertiary focus:border-wise-forest focus:ring-4 focus:ring-wise-green/40 ${error ? "border-wise-negative" : "border-wise-border"} ${className}`}
         {...props}
       />
       {error ? <p className="text-sm text-wise-negative">{error}</p> : null}

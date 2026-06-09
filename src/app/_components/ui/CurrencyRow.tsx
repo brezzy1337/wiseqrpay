@@ -15,10 +15,10 @@ export function CurrencyRow({
     <button
       type="button"
       onClick={onSelect}
-      className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
+      className={`flex w-full items-center gap-3 rounded-wise-sm border px-4 py-3.5 text-left transition motion-safe:active:scale-[0.99] ${
         selected
-          ? "border-wise-forest bg-wise-neutral"
-          : "border-wise-hairline bg-white hover:bg-wise-neutral"
+          ? "border-wise-forest bg-wise-neutral ring-2 ring-wise-forest"
+          : "border-wise-hairline bg-white hover:border-wise-border hover:bg-wise-neutral"
       }`}
     >
       <span className="text-2xl" aria-hidden>

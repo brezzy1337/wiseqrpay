@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 
-import { Button } from "~/app/_components/ui/Button";
+import { Button, buttonClasses } from "~/app/_components/ui/Button";
 import { Card } from "~/app/_components/ui/Card";
+import { Display } from "~/app/_components/ui/Display";
+import { ForestSurface } from "~/app/_components/ui/ForestSurface";
+import { QrTile } from "~/app/_components/ui/QrTile";
 import { api } from "~/trpc/react";
 
 export default function PayForm({
@@ -19,33 +22,52 @@ export default function PayForm({
 
   if (pay.data) {
     return (
-      <Card className="flex flex-col items-center gap-5">
-        <h2 className="text-2xl font-semibold tracking-tight text-wise-content">
-          Scan or tap to pay
-        </h2>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={pay.data.qrDataUrl}
-          alt="Wise payment QR code"
-          className="h-60 w-60 rounded-2xl border border-wise-hairline p-2"
-        />
-        <a
-          href={pay.data.payUrl}
-          className="w-full rounded-full bg-wise-green px-6 py-3.5 text-center text-base font-semibold text-wise-forest transition hover:brightness-95"
+      <>
+        <ForestSurface
+          className="print-hide rounded-wise-xl p-6 shadow-lg motion-safe:animate-pop"
+          contentClassName="flex flex-col items-center gap-5 text-center"
         >
-          Open Wise payment
-        </a>
-        <button
-          type="button"
-          onClick={() => {
-            pay.reset();
-            setAmount("");
-          }}
-          className="text-sm text-wise-tertiary underline"
-        >
-          Pay a different amount
-        </button>
-      </Card>
+          <Display tone="green" size="sm">
+            Scan or tap
+            <br />
+            to pay
+          </Display>
+          {/* QR on a high-contrast light tile over the forest surface. */}
+          <QrTile src={pay.data.qrDataUrl} alt="Wise payment QR code" />
+          <a
+            href={pay.data.payUrl}
+            className={buttonClasses({
+              fullWidth: true,
+              className: "text-center",
+            })}
+          >
+            Open Wise payment
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              pay.reset();
+              setAmount("");
+            }}
+            className="text-sm text-white/70 underline"
+          >
+            Pay a different amount
+          </button>
+        </ForestSurface>
+
+        {/* Clean light fallback if the pay page is ever printed — keeps the QR
+            scannable on paper without flooding ink from the forest surface. */}
+        <div className="hidden flex-col items-center gap-3 text-center print:flex">
+          <p className="font-display text-xl uppercase tracking-tight text-wise-content">
+            Scan to pay with WiseQRPay
+          </p>
+          <QrTile
+            src={pay.data.qrDataUrl}
+            alt="Wise payment QR code"
+            className="print-keep"
+          />
+        </div>
+      </>
     );
   }
 
@@ -67,7 +89,7 @@ export default function PayForm({
           >
             Amount
           </label>
-          <div className="flex items-center rounded-xl border border-wise-border bg-white px-4 py-3 focus-within:border-wise-forest">
+          <div className="flex items-center rounded-wise-sm border border-wise-border bg-white px-4 py-3.5 transition focus-within:border-wise-forest focus-within:ring-4 focus-within:ring-wise-green/40">
             <span className="mr-2 text-lg font-semibold text-wise-tertiary">
               {currency}
             </span>

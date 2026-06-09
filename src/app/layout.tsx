@@ -22,9 +22,10 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        {/* Inter, loaded at runtime (not next/font) so the build never depends on a font fetch. */}
+        {/* Inter (body) + Archivo Black (display stand-in for Wise Sans), loaded at
+            runtime (not next/font) so the build never depends on a font fetch. */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
       </head>

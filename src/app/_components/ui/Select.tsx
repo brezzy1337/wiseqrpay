@@ -24,7 +24,7 @@ export function Select({
       <select
         id={selectId}
         name={name}
-        className={`rounded-xl border border-wise-border bg-white px-4 py-3 text-wise-content outline-none focus:border-wise-forest ${className}`}
+        className={`rounded-wise-sm border border-wise-border bg-white px-4 py-3.5 text-wise-content outline-none transition focus:border-wise-forest focus:ring-4 focus:ring-wise-green/40 ${className}`}
         {...props}
       >
         {children}
