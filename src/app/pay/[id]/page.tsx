@@ -39,27 +39,28 @@ export default async function PayPage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-white px-0 pb-10">
-      {/* Bold forest header band — the brand "wow" before the (light) amount form. */}
-      <ForestSurface
-        className="print-hide w-full px-5 pb-10 pt-12 text-center"
-        contentClassName="mx-auto flex w-full max-w-md flex-col items-center gap-3"
-      >
-        <span className="text-xs font-semibold tracking-wide text-wise-green">
-          WiseQRPay
-        </span>
-        {/* Dynamic merchant name — smaller display size + wrap so long shop names
-            don't blow out the band. */}
-        <Display tone="green" size="sm" className="break-words">
-          Pay {merchant.name}
-        </Display>
-        <p className="text-white/80">
-          Paid in {merchant.targetCurrency} via Wise
-        </p>
-      </ForestSurface>
+    <main className="flex min-h-screen flex-col items-center bg-white px-5 py-10">
+      {/* Workflow screen — quiet Inter title on white; the celebratory forest
+          treatment is reserved for the post-payment success state. The header
+          stays visible in print so the counter printout names the shop. */}
+      <div className="flex w-full max-w-md flex-col gap-8">
+        <header className="flex flex-col gap-2">
+          <span className="text-sm font-semibold tracking-wide text-wise-forest">
+            WiseQRPay
+          </span>
+          <h1 className="break-words font-sans text-[30px] font-semibold leading-[34px] text-wise-content">
+            Pay {merchant.name}
+          </h1>
+          <p className="text-wise-secondary">
+            Paid in {merchant.targetCurrency} via Wise
+          </p>
+        </header>
 
-      <div className="-mt-6 w-full max-w-md px-5">
-        <PayForm merchantId={merchant.id} currency={merchant.targetCurrency} />
+        <PayForm
+          merchantId={merchant.id}
+          merchantName={merchant.name}
+          currency={merchant.targetCurrency}
+        />
       </div>
     </main>
   );

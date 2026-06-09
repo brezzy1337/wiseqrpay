@@ -18,7 +18,11 @@ export function Tapestry({ className = "" }: { className?: string }) {
       <div className="absolute left-[2%] top-[40%] h-[52vmax] w-[52vmax] rounded-full bg-wise-orange/25 blur-[120px] motion-safe:animate-float-slow" />
       <div className="absolute -right-[10%] top-[55%] h-[44vmax] w-[44vmax] rounded-full bg-wise-pink/25 blur-[120px] motion-safe:animate-float" />
 
-      {/* Crisp flowing strokes — the woven "tapestry" signature. */}
+      {/* Crisp flowing strokes — the woven "tapestry" signature.
+          NOTE: SVG stroke attributes can't take Tailwind classes, so the hex
+          literals below mirror the named tokens in tailwind.config.ts
+          (#9FE870 = wise-green, #FFEB69 = wise-yellow, #A0E1E1 = wise-blue)
+          and must stay in sync with them. */}
       <svg
         className="absolute inset-0 h-full w-full motion-safe:animate-float-slow"
         viewBox="0 0 600 600"

@@ -16,7 +16,7 @@ export default async function Home() {
       <ForestSurface
         as="main"
         className="flex min-h-screen flex-col px-5 py-10"
-        contentClassName="mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col"
+        contentClassName="stagger mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col"
       >
         {/* Wordmark */}
         <div className="flex items-center gap-2 motion-safe:animate-fade-up">
@@ -43,7 +43,7 @@ export default async function Home() {
           </Display>
 
           <p
-            className="max-w-xs text-lg leading-relaxed text-white/80 motion-safe:animate-fade-up"
+            className="max-w-xs text-lg leading-relaxed text-white motion-safe:animate-fade-up"
             style={staggerStyle(220)}
           >
             Onboard your shop in seconds and get a tourist-ready QR. Travelers
@@ -51,11 +51,11 @@ export default async function Home() {
           </p>
         </div>
 
-        {/* Sits outside the .stagger group (different layout slot), so apply the
-            reveal delay inline rather than via the `.stagger > *` selector. */}
+        {/* The content wrapper carries `stagger`, so this slot can use the
+            shared staggerStyle utility like every other revealed block. */}
         <div
           className="flex flex-col gap-4 motion-safe:animate-fade-up"
-          style={{ animationDelay: "300ms" }}
+          style={staggerStyle(300)}
         >
           <Link
             href="/dashboard"

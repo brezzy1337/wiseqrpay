@@ -1,6 +1,11 @@
 /** Landing hero illustration (replaces the 💸 emoji): a stylised QR tile with a
  *  payment arc sweeping into a globe — "scan here, money travels the world."
- *  Built for a Forest Green surface; uses the bright Wise palette. */
+ *  Built for a Forest Green surface; uses the bright Wise palette.
+ *
+ *  NOTE: SVG fill/stroke attributes can't take Tailwind classes, so the hex
+ *  literals below mirror the named tokens in tailwind.config.ts
+ *  (#9FE870 = wise-green, #163300 = wise-forest, #FFEB69 = wise-yellow,
+ *  #A0E1E1 = wise-blue, #FFC091 = wise-orange) and must stay in sync. */
 export function ScanPayMark({ className = "" }: { className?: string }) {
   return (
     <svg

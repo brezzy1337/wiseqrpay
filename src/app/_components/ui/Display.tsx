@@ -8,12 +8,14 @@ const TONES: Record<Tone, string> = {
   green: "text-wise-green", // only on forest surfaces
 };
 
-// Responsive clamp sizes — Archivo Black is heavy, so these run large + tight.
+// Exact Wise display-scale sizes (40 / 64 / 96 px), stepped responsively.
+// Every size starts at 40px on mobile — Archivo Black is wide, and 64px
+// already overflows a 430px viewport on lines like "FROM ABROAD".
 const SIZES: Record<Size, string> = {
-  sm: "text-[clamp(1.6rem,5vw,2.1rem)]",
-  md: "text-[clamp(2.1rem,7vw,2.9rem)]",
-  lg: "text-[clamp(2.6rem,9vw,3.9rem)]",
-  xl: "text-[clamp(3.1rem,12vw,5rem)]",
+  sm: "text-[40px]",
+  md: "text-[40px] sm:text-[64px]",
+  lg: "text-[64px] sm:text-[96px]",
+  xl: "text-[40px] sm:text-[64px] lg:text-[96px]",
 };
 
 interface DisplayProps {

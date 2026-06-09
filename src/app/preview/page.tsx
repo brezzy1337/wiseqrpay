@@ -14,7 +14,11 @@ export default function Preview() {
         <MerchantOnboarding />
       </div>
       <div className="w-full max-w-md">
-        <PayForm merchantId="preview" currency="THB" />
+        <PayForm
+          merchantId="preview"
+          merchantName="Preview Shop"
+          currency="THB"
+        />
       </div>
     </main>
   );

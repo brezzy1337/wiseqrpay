@@ -83,16 +83,11 @@ export default function MerchantOnboarding() {
 
         <div className="flex flex-col items-center gap-5 p-6">
           {/* Print-only heading so the counter printout is self-explanatory.
-              merchant.name is uncontrolled — wrap in Display with break-words so
-              long shop names wrap rather than overflow. */}
-          <Display
-            as="p"
-            tone="content"
-            size="sm"
-            className="hidden break-words text-center print:block"
-          >
+              merchant.name is uncontrolled — Inter + break-words so long or
+              non-Latin shop names wrap cleanly rather than overflow. */}
+          <p className="hidden break-words text-center font-sans text-lg font-semibold leading-6 text-wise-content print:block">
             Pay {merchant.name} with WiseQRPay
-          </Display>
+          </p>
 
           <span className="rounded-full bg-wise-neutral px-3 py-1 text-xs font-semibold tracking-wide text-wise-forest">
             Powered by Wise
@@ -104,7 +99,7 @@ export default function MerchantOnboarding() {
             className="print-keep"
           />
           <div className="text-center">
-            <p className="text-xl font-semibold text-wise-content">
+            <p className="text-lg font-semibold leading-6 text-wise-content">
               {merchant.name}
             </p>
             {/* Forest pill on screen; print as plain ink so it doesn't flood. */}
@@ -200,7 +195,7 @@ export default function MerchantOnboarding() {
               setStep(1);
             }}
           >
-            <h2 className="text-2xl font-semibold text-wise-content">
+            <h2 className="text-[22px] font-semibold leading-7 text-wise-content">
               Enter your business details
             </h2>
             <Select
@@ -256,7 +251,7 @@ export default function MerchantOnboarding() {
               handleSubmit();
             }}
           >
-            <h2 className="text-2xl font-semibold text-wise-content">
+            <h2 className="text-[22px] font-semibold leading-7 text-wise-content">
               Enter your account details
             </h2>
 
