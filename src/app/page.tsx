@@ -21,7 +21,7 @@ export default async function Home() {
         {/* Wordmark */}
         <div className="flex items-center gap-2 motion-safe:animate-fade-up">
           <span className="inline-block h-3 w-3 rounded-full bg-wise-green" />
-          <span className="text-sm font-semibold uppercase tracking-[0.2em] text-wise-green">
+          <span className="text-sm font-semibold tracking-wide text-wise-green">
             WiseQRPay
           </span>
         </div>

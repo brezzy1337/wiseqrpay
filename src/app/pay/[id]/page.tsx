@@ -45,7 +45,7 @@ export default async function PayPage({
         className="print-hide w-full px-5 pb-10 pt-12 text-center"
         contentClassName="mx-auto flex w-full max-w-md flex-col items-center gap-3"
       >
-        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-wise-green">
+        <span className="text-xs font-semibold tracking-wide text-wise-green">
           WiseQRPay
         </span>
         {/* Dynamic merchant name — smaller display size + wrap so long shop names

@@ -49,7 +49,7 @@ export default function PayForm({
               pay.reset();
               setAmount("");
             }}
-            className="text-sm text-white/70 underline"
+            className="text-sm text-wise-green underline"
           >
             Pay a different amount
           </button>
@@ -82,14 +82,14 @@ export default function PayForm({
           pay.mutate({ merchantId, amount: parsed });
         }}
       >
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="amount"
             className="text-sm font-medium text-wise-secondary"
           >
             Amount
           </label>
-          <div className="flex items-center rounded-wise-sm border border-wise-border bg-white px-4 py-3.5 transition focus-within:border-wise-forest focus-within:ring-4 focus-within:ring-wise-green/40">
+          <div className="flex items-center rounded-wise-sm border border-wise-border bg-white px-4 py-3 transition focus-within:border-wise-forest focus-within:ring-4 focus-within:ring-wise-green/40">
             <span className="mr-2 text-lg font-semibold text-wise-tertiary">
               {currency}
             </span>

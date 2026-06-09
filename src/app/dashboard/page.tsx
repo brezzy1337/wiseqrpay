@@ -55,7 +55,7 @@ export default async function DashboardPage() {
     <main className="flex min-h-screen flex-col items-center bg-white px-5 py-10">
       <div className="w-full max-w-md">
         <div className="print-hide mb-6 flex items-center gap-2">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-wise-green" />
+          <span className="inline-block h-2 w-2 rounded-full bg-wise-green" />
           <p className="text-sm text-wise-tertiary">
             Signed in as {session.user.name ?? "merchant"}
           </p>

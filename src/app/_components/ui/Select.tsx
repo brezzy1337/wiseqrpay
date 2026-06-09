@@ -14,7 +14,7 @@ export function Select({
 }: SelectProps) {
   const selectId = id ?? name;
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <label
         htmlFor={selectId}
         className="text-sm font-medium text-wise-secondary"
@@ -24,7 +24,7 @@ export function Select({
       <select
         id={selectId}
         name={name}
-        className={`rounded-wise-sm border border-wise-border bg-white px-4 py-3.5 text-wise-content outline-none transition focus:border-wise-forest focus:ring-4 focus:ring-wise-green/40 ${className}`}
+        className={`rounded-wise-sm border border-wise-border bg-white px-4 py-3 text-wise-content outline-none transition focus:border-wise-forest focus:ring-4 focus:ring-wise-green/40 ${className}`}
         {...props}
       >
         {children}
