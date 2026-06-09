@@ -53,3 +53,6 @@ yarn-error.log*
 .env
 .env
 .env
+
+# design-review screenshot output
+preview-shots/
