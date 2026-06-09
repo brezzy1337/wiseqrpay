@@ -4,8 +4,9 @@ export interface Currency {
   country: string;
 }
 
-/** Payout currencies offered at onboarding. Rendered with on-brand letter
- *  avatars (the 2-letter country) — no image dependency, no emoji. */
+/** Payout currencies offered at onboarding. Rendered with hand-vendored
+ *  circular flag icons (see illustrations/flags.tsx), falling back to a
+ *  letter avatar for unknown codes — no image dependency, no emoji. */
 export const CURRENCIES: Currency[] = [
   { code: "THB", name: "Thai Baht", country: "TH" },
   { code: "VND", name: "Vietnamese Dong", country: "VN" },

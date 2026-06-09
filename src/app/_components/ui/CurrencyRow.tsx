@@ -1,4 +1,5 @@
 import { type Currency } from "./currencies";
+import { Flag, hasFlag } from "./illustrations/flags";
 
 interface CurrencyRowProps {
   currency: Currency;
@@ -21,12 +22,17 @@ export function CurrencyRow({
           : "border-wise-hairline bg-white hover:border-wise-border hover:bg-wise-neutral"
       }`}
     >
-      <span
-        aria-hidden
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-wise-neutral text-sm font-semibold text-wise-forest"
-      >
-        {currency.country}
-      </span>
+      {hasFlag(currency.country) ? (
+        <Flag country={currency.country} className="h-10 w-10 shrink-0" />
+      ) : (
+        // Fallback letter-avatar badge for codes without a vendored flag.
+        <span
+          aria-hidden
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-wise-neutral text-sm font-semibold text-wise-forest"
+        >
+          {currency.country}
+        </span>
+      )}
       <span className="flex-1">
         <span className="block font-semibold text-wise-content">
           {currency.name}
