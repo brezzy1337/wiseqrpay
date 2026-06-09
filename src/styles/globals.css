@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply bg-white font-sans text-wise-content antialiased;
+}
+
+@layer components {
+  /* Loud all-caps display headline — Archivo Black, tightened. */
+  .wise-display {
+    @apply font-display uppercase leading-[0.92] tracking-tight;
+    /* Archivo Black is heavy; pull the tracking in a touch for the poster feel. */
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  /* Fine grain/noise overlay for tapestry depth (inline SVG feTurbulence). */
+  .tapestry-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Staggered reveal helper — child N animates a beat after child N-1. */
+.stagger > * {
+  animation-delay: calc(var(--stagger, 0) * 1ms);
+}
+
+/* Clean printout for the merchant QR card: drop chrome, force light,
+   keep the code crisp. The QR tile carries .print-keep. */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  .print-clean {
+    background: #ffffff !important;
+    color: #0e0f0c !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  /* Force-keep the QR tile in print even if an ancestor is hidden. */
+  .print-keep {
+    display: block !important;
+  }
+  .tapestry-grain::after,
+  .print-no-decor {
+    display: none !important;
+  }
+}
+
+/* Respect reduced-motion globally for the keyframe animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,56 +1,85 @@
-// import Link from "next/link";
+import Link from "next/link";
 
-import { LatestPost } from "~/app/_components/post.tsx";
+import { buttonClasses } from "~/app/_components/ui/Button";
+import { Display } from "~/app/_components/ui/Display";
+import { ForestSurface } from "~/app/_components/ui/ForestSurface";
+import { ScanPayMark } from "~/app/_components/ui/illustrations/ScanPayMark";
+import { staggerStyle } from "~/app/_components/ui/stagger";
 import { auth } from "~/server/auth/auth";
 import { HydrateClient } from "~/trpc/server.ts";
-import Link from "next/link";
 
 export default async function Home() {
   const session = await auth();
 
-  // if (session?.user) {
-  //   void api.post.getLatest.prefetch();
-  // }
-
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Wise<span className="text-[hsl(280,100%,70%)]">QR</span>Pay
-          </h1>
-          <p className="max-w-md text-center text-lg text-white/80">
-            Onboard a local merchant in seconds and get a tourist-ready QR. A
-            traveler scans it, enters an amount, and pays via Wise.
-          </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="/dashboard"
-            >
-              <h3 className="text-2xl font-bold">Merchant dashboard →</h3>
-              <div className="text-lg">
-                Sign in, onboard your shop, and generate your WiseQRPay QR.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-              >
-                {session ? "Sign out" : "Sign in"}
-              </Link>
-            </div>
+      <ForestSurface
+        as="main"
+        className="flex min-h-screen flex-col px-5 py-10"
+        contentClassName="mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col"
+      >
+        {/* Wordmark */}
+        <div className="flex items-center gap-2 motion-safe:animate-fade-up">
+          <span className="inline-block h-3 w-3 rounded-full bg-wise-green" />
+          <span className="text-sm font-semibold uppercase tracking-[0.2em] text-wise-green">
+            WiseQRPay
+          </span>
+        </div>
+
+        <div className="stagger flex flex-1 flex-col items-start justify-center gap-7 py-12">
+          <div className="motion-safe:animate-fade-up" style={staggerStyle(60)}>
+            <ScanPayMark className="h-40 w-40 drop-shadow-xl" />
           </div>
 
-          {session?.user && <LatestPost />}
+          <Display
+            tone="green"
+            size="xl"
+            className="motion-safe:animate-fade-up"
+            style={staggerStyle(140)}
+          >
+            Get paid
+            <br />
+            from abroad
+          </Display>
+
+          <p
+            className="max-w-xs text-lg leading-relaxed text-white/80 motion-safe:animate-fade-up"
+            style={staggerStyle(220)}
+          >
+            Onboard your shop in seconds and get a tourist-ready QR. Travelers
+            scan it and pay you via Wise.
+          </p>
         </div>
-      </main>
+
+        {/* Sits outside the .stagger group (different layout slot), so apply the
+            reveal delay inline rather than via the `.stagger > *` selector. */}
+        <div
+          className="flex flex-col gap-4 motion-safe:animate-fade-up"
+          style={{ animationDelay: "300ms" }}
+        >
+          <Link
+            href="/dashboard"
+            className={buttonClasses({ fullWidth: true, className: "text-center" })}
+          >
+            Get started
+          </Link>
+          {session?.user ? (
+            <p className="text-center text-sm text-white/60">
+              Signed in as {session.user.name} ·{" "}
+              <Link href="/api/auth/signout" className="text-wise-green underline">
+                Sign out
+              </Link>
+            </p>
+          ) : (
+            <Link
+              href="/api/auth/signin"
+              className="text-center text-sm font-medium text-wise-green underline underline-offset-4"
+            >
+              Merchant sign in
+            </Link>
+          )}
+        </div>
+      </ForestSurface>
     </HydrateClient>
   );
 }

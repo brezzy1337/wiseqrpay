@@ -3,144 +3,293 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 
+import { Button } from "~/app/_components/ui/Button";
+import { Card } from "~/app/_components/ui/Card";
+import { CurrencyRow } from "~/app/_components/ui/CurrencyRow";
+import { CURRENCIES } from "~/app/_components/ui/currencies";
+import { Display } from "~/app/_components/ui/Display";
+import { ForestSurface } from "~/app/_components/ui/ForestSurface";
+import { ProgressBar } from "~/app/_components/ui/ProgressBar";
+import { QrTile } from "~/app/_components/ui/QrTile";
+import { Select } from "~/app/_components/ui/Select";
+import { TextInput } from "~/app/_components/ui/TextInput";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type Merchant = RouterOutputs["merchant"]["create"];
 
+const BUSINESS_TYPE_OPTIONS = [
+  "Retail",
+  "Restaurant",
+  "Services",
+  "Accommodation",
+  "Transport",
+  "Other",
+];
+
 export default function MerchantOnboarding() {
-  const [name, setName] = useState("");
-  const [payoutAccount, setPayoutAccount] = useState("");
-  const [targetCurrency, setTargetCurrency] = useState("");
-  const [targetCountry, setTargetCountry] = useState("");
+  const [step, setStep] = useState<0 | 1>(0);
+
+  // Business details
+  const [businessType, setBusinessType] = useState("Retail");
+  const [businessName, setBusinessName] = useState("");
+  const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
+  const [postCode, setPostCode] = useState("");
+
+  // Account details
+  const [currencyCode, setCurrencyCode] = useState(
+    CURRENCIES[0]?.code ?? "SGD",
+  );
+  const [accountHolder, setAccountHolder] = useState("");
+  const [bankName, setBankName] = useState("");
 
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [payUrl, setPayUrl] = useState<string | null>(null);
 
   const create = api.merchant.create.useMutation({
-    onSuccess: (data) => {
-      setMerchant(data);
-    },
+    onSuccess: (data) => setMerchant(data),
   });
 
-  // Build the QR client-side once we have a merchant. Doing this in an effect
-  // keeps the async work out of the mutation callback and off SSR.
+  // Build the shop QR (encodes the hosted /pay/[id] URL) once the merchant exists.
   useEffect(() => {
     if (!merchant) return;
     const url = `${window.location.origin}/pay/${merchant.id}`;
-    setPayUrl(url);
-    void QRCode.toDataURL(url).then((dataUrl) => {
-      setQrDataUrl(dataUrl);
-    });
+    void QRCode.toDataURL(url, { width: 320, margin: 1 }).then(setQrDataUrl);
   }, [merchant]);
 
+  // ---------- QR result screen ----------
   if (merchant) {
+    // Latin slug for the @handle; fall back to the id so non-Latin shop names
+    // (Thai, Vietnamese, …) don't collapse to a bare "@".
+    const handle =
+      merchant.name.toLowerCase().replace(/[^a-z0-9]+/g, "") ||
+      merchant.id.slice(0, 8);
     return (
-      <div className="flex w-full max-w-md flex-col items-center gap-6 rounded-xl bg-white/10 p-8">
-        <h2 className="text-2xl font-bold">
-          {merchant.name} is tourist-ready
-        </h2>
-        <p className="text-center text-white/70">
-          Print or display this QR. A traveler scans it to pay you via Wise.
-        </p>
-        {qrDataUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+      <div className="print-clean overflow-hidden rounded-wise-xl border border-wise-hairline bg-white shadow-lg motion-safe:animate-pop">
+        {/* Bold forest header — the "wow" frame (hidden in print). */}
+        <ForestSurface
+          className="print-hide px-6 pb-7 pt-6 text-center"
+          contentClassName="flex flex-col items-center gap-3"
+        >
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-wise-green">
+            WiseQRPay
+          </span>
+          <Display tone="green" size="md">
+            You&apos;re
+            <br />
+            tourist-ready
+          </Display>
+        </ForestSurface>
+
+        <div className="flex flex-col items-center gap-5 p-6">
+          {/* Print-only heading so the counter printout is self-explanatory. */}
+          <p className="hidden text-center font-display text-xl uppercase tracking-tight text-wise-content print:block">
+            Pay {merchant.name} with WiseQRPay
+          </p>
+
+          <span className="rounded-full bg-wise-neutral px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-wise-forest">
+            Powered by Wise
+          </span>
+
+          <QrTile
             src={qrDataUrl}
             alt={`Pay QR code for ${merchant.name}`}
-            className="h-56 w-56 rounded-lg bg-white p-2"
+            className="print-keep"
           />
-        ) : (
-          <p className="text-white/60">Generating QR…</p>
-        )}
-        {payUrl && (
+          <div className="text-center">
+            <p className="text-xl font-semibold text-wise-content">
+              {merchant.name}
+            </p>
+            {/* Forest pill on screen; print as plain ink so it doesn't flood. */}
+            {/* Presentational identifier — neutral badge, not a link affordance. */}
+            <span className="mt-1 inline-block rounded-full bg-wise-neutral px-3 py-1 text-sm font-medium text-wise-forest print:bg-transparent print:px-0">
+              @{handle}
+            </span>
+          </div>
           <a
             href={`/pay/${merchant.id}`}
-            className="break-all rounded-full bg-white/10 px-6 py-2 text-center font-semibold transition hover:bg-white/20"
+            className="print-hide text-sm font-semibold text-wise-forest underline underline-offset-4"
           >
-            /pay/{merchant.id}
+            Open pay page
           </a>
-        )}
-        <button
-          type="button"
-          onClick={() => {
-            setMerchant(null);
-            setQrDataUrl(null);
-            setPayUrl(null);
-          }}
-          className="text-sm text-white/60 underline hover:text-white"
-        >
-          Onboard another shop
-        </button>
+          <Button
+            className="print-hide"
+            fullWidth
+            variant="secondary"
+            type="button"
+            onClick={() => window.print()}
+          >
+            Print QR for the counter
+          </Button>
+          <button
+            type="button"
+            onClick={resetAll}
+            className="print-hide text-sm text-wise-tertiary underline"
+          >
+            Onboard another shop
+          </button>
+        </div>
       </div>
     );
   }
 
+  const selectedCurrency =
+    CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
+
+  // Clear every field so "Onboard another shop" starts clean rather than
+  // pre-filling the previous merchant's stale details.
+  function resetAll() {
+    setMerchant(null);
+    setQrDataUrl(null);
+    setStep(0);
+    setBusinessType("Retail");
+    setBusinessName("");
+    setCity("");
+    setAddress("");
+    setPostCode("");
+    setCurrencyCode(CURRENCIES[0]?.code ?? "SGD");
+    setAccountHolder("");
+    setBankName("");
+  }
+
+  function handleSubmit() {
+    if (!selectedCurrency) return;
+    // City / Address / Post Code aren't columns on Merchant yet, and payoutAccount
+    // is a single string — fold account holder + bank name into it for now.
+    // TODO: persist city/address/postCode (and split bank fields) in a future Data slice.
+    create.mutate({
+      name: businessName,
+      payoutAccount: bankName
+        ? `${accountHolder} · ${bankName}`
+        : accountHolder,
+      targetCurrency: selectedCurrency.code,
+      targetCountry: selectedCurrency.country,
+      businessType,
+    });
+  }
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        create.mutate({ name, payoutAccount, targetCurrency, targetCountry });
-      }}
-      className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-white/10 p-8"
-    >
-      <h2 className="text-2xl font-bold">Onboard your shop</h2>
+    <Card>
+      <ProgressBar value={step === 0 ? 50 : 100} />
 
-      <label className="flex flex-col gap-1 text-sm">
-        Shop name
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          placeholder="Madam Linh's Coffee"
-          className="rounded-md bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:bg-white/20 focus:outline-none"
-        />
-      </label>
+      {step === 0 ? (
+        <form
+          className="mt-6 flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep(1);
+          }}
+        >
+          <Display as="h2" tone="content" size="sm">
+            Enter your business details
+          </Display>
+          <Select
+            label="Type of Business"
+            name="businessType"
+            value={businessType}
+            onChange={(e) => setBusinessType(e.target.value)}
+          >
+            {BUSINESS_TYPE_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </Select>
+          <TextInput
+            label="Business name"
+            name="businessName"
+            required
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            placeholder="Madam Linh's Coffee"
+          />
+          <TextInput
+            label="City"
+            name="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Chiang Mai"
+          />
+          <TextInput
+            label="Address"
+            name="address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="123 Nimman Rd"
+          />
+          <TextInput
+            label="Post code"
+            name="postCode"
+            value={postCode}
+            onChange={(e) => setPostCode(e.target.value)}
+            placeholder="50200"
+          />
+          <Button type="submit" fullWidth disabled={!businessName}>
+            Confirm
+          </Button>
+        </form>
+      ) : (
+        <form
+          className="mt-6 flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <Display as="h2" tone="content" size="sm">
+            Enter your account details
+          </Display>
 
-      <label className="flex flex-col gap-1 text-sm">
-        Payout account (IBAN / account detail)
-        <input
-          value={payoutAccount}
-          onChange={(e) => setPayoutAccount(e.target.value)}
-          required
-          placeholder="GB29 NWBK 6016 1331 9268 19"
-          className="rounded-md bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:bg-white/20 focus:outline-none"
-        />
-      </label>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-wise-secondary">
+              Currency
+            </span>
+            {CURRENCIES.map((c) => (
+              <CurrencyRow
+                key={c.code}
+                currency={c}
+                selected={c.code === currencyCode}
+                onSelect={() => setCurrencyCode(c.code)}
+              />
+            ))}
+          </div>
 
-      <label className="flex flex-col gap-1 text-sm">
-        Target currency
-        <input
-          value={targetCurrency}
-          onChange={(e) => setTargetCurrency(e.target.value)}
-          required
-          placeholder="VND"
-          className="rounded-md bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:bg-white/20 focus:outline-none"
-        />
-      </label>
+          <TextInput
+            label="Full name of account holder"
+            name="accountHolder"
+            required
+            value={accountHolder}
+            onChange={(e) => setAccountHolder(e.target.value)}
+            placeholder="Linh Nguyen"
+          />
+          <TextInput
+            label="Bank name"
+            name="bankName"
+            value={bankName}
+            onChange={(e) => setBankName(e.target.value)}
+            placeholder="Bangkok Bank"
+          />
 
-      <label className="flex flex-col gap-1 text-sm">
-        Target country
-        <input
-          value={targetCountry}
-          onChange={(e) => setTargetCountry(e.target.value)}
-          required
-          placeholder="VN"
-          className="rounded-md bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:bg-white/20 focus:outline-none"
-        />
-      </label>
+          <Button
+            type="submit"
+            fullWidth
+            disabled={create.isPending || !accountHolder}
+          >
+            {create.isPending ? "Creating…" : "Confirm"}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setStep(0)}
+            className="text-sm text-wise-tertiary underline"
+          >
+            Back
+          </button>
 
-      <button
-        type="submit"
-        disabled={create.isPending}
-        className="rounded-full bg-[hsl(280,100%,70%)] px-10 py-3 font-semibold text-[#15162c] transition hover:opacity-90 disabled:opacity-50"
-      >
-        {create.isPending ? "Creating…" : "Create QR"}
-      </button>
-
-      {create.error && (
-        <p className="text-sm text-red-300">{create.error.message}</p>
+          {create.error ? (
+            <p className="text-sm text-wise-negative">{create.error.message}</p>
+          ) : null}
+        </form>
       )}
-    </form>
+    </Card>
   );
 }
