@@ -19,7 +19,7 @@
  * - --disable-dev-shm-usage: containers mount a small /dev/shm and full-page
  *   shots crash the renderer without it.
  */
-const { chromium } = require("playwright");
+const { chromium } = require("@playwright/test");
 
 const BASE = process.env.PREVIEW_BASE_URL ?? "http://localhost:3000";
 const OUT = `${__dirname}/../preview-shots`;

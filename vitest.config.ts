@@ -18,6 +18,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Playwright e2e specs live in e2e/ and run via `npm run test:e2e`,
+    // never inside the vitest unit gate.
+    exclude: ["e2e/**", "node_modules/**"],
     env: {
       DATABASE_URL: "postgresql://test:test@localhost:5432/test",
       AUTH_SECRET: "test-secret",
