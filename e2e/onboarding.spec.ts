@@ -12,6 +12,13 @@ test.describe("merchant onboarding (session-injected)", () => {
     "needs local DB access for session injection",
   );
 
+  // Clean BEFORE as well as after: a crashed previous run that left an e2e
+  // store behind would flip /dashboard into list-mode and the wizard wouldn't
+  // render directly (scope/demo.md known bug class f).
+  test.beforeAll(async () => {
+    await cleanupTestData();
+  });
+
   test.afterAll(async () => {
     await cleanupTestData();
   });
@@ -25,10 +32,20 @@ test.describe("merchant onboarding (session-injected)", () => {
     await page.goto("/dashboard");
     await expect(page.getByText(/signed in as/i)).toBeVisible();
 
+    // Fresh e2e user → the wizard renders directly. Defense-in-depth: if a
+    // leftover store still put the dashboard in list-mode, open the wizard
+    // via "Add another store" instead of failing confusingly.
+    const wizardHeading = page.getByRole("heading", {
+      name: "Enter your business details",
+    });
+    if (!(await wizardHeading.isVisible())) {
+      await page
+        .getByRole("button", { name: /add another store/i })
+        .click();
+    }
+
     // Step 1 of 2 — business details.
-    await expect(
-      page.getByRole("heading", { name: "Enter your business details" }),
-    ).toBeVisible();
+    await expect(wizardHeading).toBeVisible();
     await page.getByLabel("Type of Business").selectOption("Restaurant");
     await page.getByLabel("Business name").fill("E2E Noodle Bar");
     await page.getByLabel("City").fill("Chiang Mai");
@@ -56,5 +73,27 @@ test.describe("merchant onboarding (session-injected)", () => {
       page.getByRole("heading", { name: /pay e2e noodle bar/i }),
     ).toBeVisible();
     await expect(page.getByLabel("Amount")).toBeVisible();
+
+    // Back on the dashboard, the new store shows up in the owner's list…
+    await page.goto("/dashboard");
+    await expect(
+      page.getByRole("heading", { name: "Your stores" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "E2E Noodle Bar" }),
+    ).toBeVisible();
+
+    // …and its owner-only detail page renders info, QR, and payments.
+    await page.getByRole("link", { name: "View store" }).click();
+    await expect(
+      page.getByRole("heading", { name: "E2E Noodle Bar" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Your pay QR" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Recent payments" }),
+    ).toBeVisible();
+    await expect(page.getByText(/no payments yet/i)).toBeVisible();
   });
 });

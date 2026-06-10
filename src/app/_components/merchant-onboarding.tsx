@@ -26,7 +26,18 @@ const BUSINESS_TYPE_OPTIONS = [
   "Other",
 ];
 
-export default function MerchantOnboarding() {
+export default function MerchantOnboarding({
+  onCreated,
+  embedded = false,
+}: {
+  /** Called after the create mutation succeeds — lets a server-rendered parent
+   *  (the dashboard store list) refresh itself. Optional and backward compatible. */
+  onCreated?: () => void;
+  /** True when the wizard renders inside another screen (the dashboard store
+   *  list). Suppresses the brand band so a workflow screen keeps one focal
+   *  point; the first-run flow and the success celebration are unchanged. */
+  embedded?: boolean;
+}) {
   const [step, setStep] = useState<0 | 1>(0);
 
   // Business details
@@ -47,7 +58,10 @@ export default function MerchantOnboarding() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   const create = api.merchant.create.useMutation({
-    onSuccess: (data) => setMerchant(data),
+    onSuccess: (data) => {
+      setMerchant(data);
+      onCreated?.();
+    },
   });
 
   // Build the shop QR (encodes the hosted /pay/[id] URL) once the merchant exists.
@@ -172,17 +186,20 @@ export default function MerchantOnboarding() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Slim brand band anchors the wizard between the gate and success
-          states — compact wordmark row, not a full hero. */}
-      <ForestSurface
-        className="rounded-wise-xl px-5 py-3"
-        contentClassName="flex items-center gap-2"
-      >
-        <span className="inline-block h-2 w-2 rounded-full bg-wise-green" />
-        <span className="text-sm font-semibold tracking-wide text-wise-green">
-          WiseQRPay
-        </span>
-      </ForestSurface>
+      {/* Slim brand band anchors the standalone wizard between the gate and
+          success states — suppressed when embedded in the store list, where
+          the screen already has its own title. */}
+      {embedded ? null : (
+        <ForestSurface
+          className="rounded-wise-xl px-5 py-3"
+          contentClassName="flex items-center gap-2"
+        >
+          <span className="inline-block h-2 w-2 rounded-full bg-wise-green" />
+          <span className="text-sm font-semibold tracking-wide text-wise-green">
+            WiseQRPay
+          </span>
+        </ForestSurface>
+      )}
 
       <Card>
         <p className="mb-2 text-sm font-medium text-wise-secondary">
