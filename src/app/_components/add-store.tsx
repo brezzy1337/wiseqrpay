@@ -29,8 +29,9 @@ export default function AddStore() {
     );
   }
 
-  // One heading owns the open wizard ("Enter your business details" inside
-  // the form card) — this chrome reduces to a single Close control.
+  // One heading owns the open wizard ("How will you take payments?" — the
+  // account-type chooser inside the form card) — this chrome reduces to a
+  // single Close control.
   return (
     <div className="flex flex-col gap-4">
       <div className="print-hide flex justify-end">
