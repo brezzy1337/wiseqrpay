@@ -25,6 +25,13 @@ export const E2E_USER_ID = "e2e-user-1";
 /** Upsert the e2e user and mint a fresh database session for it.
  *  Returns the cookie to add via `context.addCookies`. */
 export async function createTestSession() {
+  // Binding guard (not just the caller's test.skip): session injection must
+  // never run against a remote target.
+  if (process.env.E2E_BASE_URL) {
+    throw new Error(
+      "createTestSession is local-only — unset E2E_BASE_URL to run the onboarding spec.",
+    );
+  }
   await prisma().user.upsert({
     where: { id: E2E_USER_ID },
     update: {},
