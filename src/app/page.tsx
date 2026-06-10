@@ -16,19 +16,19 @@ export default async function Home() {
       <ForestSurface
         as="main"
         className="flex min-h-screen flex-col px-5 py-10"
-        contentClassName="mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col"
+        contentClassName="stagger mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col md:max-w-2xl lg:max-w-3xl"
       >
         {/* Wordmark */}
         <div className="flex items-center gap-2 motion-safe:animate-fade-up">
-          <span className="inline-block h-3 w-3 rounded-full bg-wise-green" />
-          <span className="text-sm font-semibold uppercase tracking-[0.2em] text-wise-green">
+          <span className="inline-block h-4 w-4 rounded-full bg-wise-green" />
+          <span className="text-2xl font-bold tracking-tight text-wise-green">
             WiseQRPay
           </span>
         </div>
 
         <div className="stagger flex flex-1 flex-col items-start justify-center gap-7 py-12">
           <div className="motion-safe:animate-fade-up" style={staggerStyle(60)}>
-            <ScanPayMark className="h-40 w-40 drop-shadow-xl" />
+            <ScanPayMark className="h-40 w-40 drop-shadow-xl md:h-48 md:w-48" />
           </div>
 
           <Display
@@ -43,7 +43,7 @@ export default async function Home() {
           </Display>
 
           <p
-            className="max-w-xs text-lg leading-relaxed text-white/80 motion-safe:animate-fade-up"
+            className="max-w-xs text-lg leading-relaxed text-white motion-safe:animate-fade-up md:max-w-sm"
             style={staggerStyle(220)}
           >
             Onboard your shop in seconds and get a tourist-ready QR. Travelers
@@ -51,22 +51,28 @@ export default async function Home() {
           </p>
         </div>
 
-        {/* Sits outside the .stagger group (different layout slot), so apply the
-            reveal delay inline rather than via the `.stagger > *` selector. */}
+        {/* The content wrapper carries `stagger`, so this slot can use the
+            shared staggerStyle utility like every other revealed block. */}
         <div
-          className="flex flex-col gap-4 motion-safe:animate-fade-up"
-          style={{ animationDelay: "300ms" }}
+          className="flex flex-col gap-4 motion-safe:animate-fade-up md:max-w-sm"
+          style={staggerStyle(300)}
         >
           <Link
             href="/dashboard"
-            className={buttonClasses({ fullWidth: true, className: "text-center" })}
+            className={buttonClasses({
+              fullWidth: true,
+              className: "text-center",
+            })}
           >
             Get started
           </Link>
           {session?.user ? (
             <p className="text-center text-sm text-white/60">
               Signed in as {session.user.name} ·{" "}
-              <Link href="/api/auth/signout" className="text-wise-green underline">
+              <Link
+                href="/api/auth/signout"
+                className="text-wise-green underline"
+              >
                 Sign out
               </Link>
             </p>

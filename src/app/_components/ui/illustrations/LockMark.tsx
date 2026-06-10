@@ -1,6 +1,10 @@
 /** Sign-in gate illustration (replaces the 🔐 emoji): a friendly rounded padlock
- *  with a bright shackle and a keyhole shaped like a coin slot. Built for a
- *  Forest Green surface. */
+ *  with a bright shackle and a keyhole shaped like a coin slot.
+ *
+ *  NOTE: SVG fill/stroke attributes can't take Tailwind classes, so the hex
+ *  literals below mirror the named tokens in tailwind.config.ts
+ *  (#9FE870 = wise-green, #163300 = wise-forest, #FFEB69 = wise-yellow,
+ *  #A0E1E1 = wise-blue) and must stay in sync. */
 export function LockMark({ className = "" }: { className?: string }) {
   return (
     <svg

@@ -59,11 +59,11 @@ export default function MerchantOnboarding() {
 
   // ---------- QR result screen ----------
   if (merchant) {
-    // Latin slug for the @handle; fall back to the id so non-Latin shop names
-    // (Thai, Vietnamese, …) don't collapse to a bare "@".
-    const handle =
-      merchant.name.toLowerCase().replace(/[^a-z0-9]+/g, "") ||
-      merchant.id.slice(0, 8);
+    // Latin slug for the @handle. Non-Latin shop names (Thai, Vietnamese, …)
+    // strip to an empty slug — in that case show the merchant name itself
+    // rather than a meaningless raw id fragment.
+    const slug = merchant.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+    const handleLabel = slug ? `@${slug}` : merchant.name;
     return (
       <div className="print-clean overflow-hidden rounded-wise-xl border border-wise-hairline bg-white shadow-lg motion-safe:animate-pop">
         {/* Bold forest header — the "wow" frame (hidden in print). */}
@@ -71,7 +71,7 @@ export default function MerchantOnboarding() {
           className="print-hide px-6 pb-7 pt-6 text-center"
           contentClassName="flex flex-col items-center gap-3"
         >
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-wise-green">
+          <span className="text-xs font-semibold tracking-wide text-wise-green">
             WiseQRPay
           </span>
           <Display tone="green" size="md">
@@ -82,12 +82,14 @@ export default function MerchantOnboarding() {
         </ForestSurface>
 
         <div className="flex flex-col items-center gap-5 p-6">
-          {/* Print-only heading so the counter printout is self-explanatory. */}
-          <p className="hidden text-center font-display text-xl uppercase tracking-tight text-wise-content print:block">
+          {/* Print-only heading so the counter printout is self-explanatory.
+              merchant.name is uncontrolled — Inter + break-words so long or
+              non-Latin shop names wrap cleanly rather than overflow. */}
+          <p className="hidden break-words text-center font-sans text-lg font-semibold leading-6 text-wise-content print:block">
             Pay {merchant.name} with WiseQRPay
           </p>
 
-          <span className="rounded-full bg-wise-neutral px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-wise-forest">
+          <span className="rounded-full bg-wise-neutral px-3 py-1 text-xs font-semibold tracking-wide text-wise-forest">
             Powered by Wise
           </span>
 
@@ -97,13 +99,13 @@ export default function MerchantOnboarding() {
             className="print-keep"
           />
           <div className="text-center">
-            <p className="text-xl font-semibold text-wise-content">
+            <p className="text-lg font-semibold leading-6 text-wise-content">
               {merchant.name}
             </p>
             {/* Forest pill on screen; print as plain ink so it doesn't flood. */}
             {/* Presentational identifier — neutral badge, not a link affordance. */}
             <span className="mt-1 inline-block rounded-full bg-wise-neutral px-3 py-1 text-sm font-medium text-wise-forest print:bg-transparent print:px-0">
-              @{handle}
+              {handleLabel}
             </span>
           </div>
           <a
@@ -124,7 +126,7 @@ export default function MerchantOnboarding() {
           <button
             type="button"
             onClick={resetAll}
-            className="print-hide text-sm text-wise-tertiary underline"
+            className="print-hide text-sm text-wise-forest underline"
           >
             Onboard another shop
           </button>
@@ -169,127 +171,146 @@ export default function MerchantOnboarding() {
   }
 
   return (
-    <Card>
-      <ProgressBar value={step === 0 ? 50 : 100} />
+    <div className="flex flex-col gap-4">
+      {/* Slim brand band anchors the wizard between the gate and success
+          states — compact wordmark row, not a full hero. */}
+      <ForestSurface
+        className="rounded-wise-xl px-5 py-3"
+        contentClassName="flex items-center gap-2"
+      >
+        <span className="inline-block h-2 w-2 rounded-full bg-wise-green" />
+        <span className="text-sm font-semibold tracking-wide text-wise-green">
+          WiseQRPay
+        </span>
+      </ForestSurface>
 
-      {step === 0 ? (
-        <form
-          className="mt-6 flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setStep(1);
-          }}
-        >
-          <Display as="h2" tone="content" size="sm">
-            Enter your business details
-          </Display>
-          <Select
-            label="Type of Business"
-            name="businessType"
-            value={businessType}
-            onChange={(e) => setBusinessType(e.target.value)}
+      <Card>
+        <p className="mb-2 text-sm font-medium text-wise-secondary">
+          Step {step === 0 ? 1 : 2} of 2
+        </p>
+        <ProgressBar value={step === 0 ? 50 : 100} />
+
+        {step === 0 ? (
+          <form
+            className="mt-6 flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setStep(1);
+            }}
           >
-            {BUSINESS_TYPE_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </Select>
-          <TextInput
-            label="Business name"
-            name="businessName"
-            required
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-            placeholder="Madam Linh's Coffee"
-          />
-          <TextInput
-            label="City"
-            name="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Chiang Mai"
-          />
-          <TextInput
-            label="Address"
-            name="address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="123 Nimman Rd"
-          />
-          <TextInput
-            label="Post code"
-            name="postCode"
-            value={postCode}
-            onChange={(e) => setPostCode(e.target.value)}
-            placeholder="50200"
-          />
-          <Button type="submit" fullWidth disabled={!businessName}>
-            Confirm
-          </Button>
-        </form>
-      ) : (
-        <form
-          className="mt-6 flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-        >
-          <Display as="h2" tone="content" size="sm">
-            Enter your account details
-          </Display>
-
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-wise-secondary">
-              Currency
-            </span>
-            {CURRENCIES.map((c) => (
-              <CurrencyRow
-                key={c.code}
-                currency={c}
-                selected={c.code === currencyCode}
-                onSelect={() => setCurrencyCode(c.code)}
-              />
-            ))}
-          </div>
-
-          <TextInput
-            label="Full name of account holder"
-            name="accountHolder"
-            required
-            value={accountHolder}
-            onChange={(e) => setAccountHolder(e.target.value)}
-            placeholder="Linh Nguyen"
-          />
-          <TextInput
-            label="Bank name"
-            name="bankName"
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-            placeholder="Bangkok Bank"
-          />
-
-          <Button
-            type="submit"
-            fullWidth
-            disabled={create.isPending || !accountHolder}
+            <h2 className="text-[22px] font-semibold leading-7 text-wise-content">
+              Enter your business details
+            </h2>
+            <Select
+              label="Type of Business"
+              name="businessType"
+              value={businessType}
+              onChange={(e) => setBusinessType(e.target.value)}
+            >
+              {BUSINESS_TYPE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Select>
+            <TextInput
+              label="Business name"
+              name="businessName"
+              required
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="Madam Linh's Coffee"
+            />
+            <TextInput
+              label="City"
+              name="city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Chiang Mai"
+            />
+            <TextInput
+              label="Address"
+              name="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="123 Nimman Rd"
+            />
+            <TextInput
+              label="Post code"
+              name="postCode"
+              value={postCode}
+              onChange={(e) => setPostCode(e.target.value)}
+              placeholder="50200"
+            />
+            <Button type="submit" fullWidth disabled={!businessName}>
+              Confirm
+            </Button>
+          </form>
+        ) : (
+          <form
+            className="mt-6 flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
           >
-            {create.isPending ? "Creating…" : "Confirm"}
-          </Button>
-          <button
-            type="button"
-            onClick={() => setStep(0)}
-            className="text-sm text-wise-tertiary underline"
-          >
-            Back
-          </button>
+            <h2 className="text-[22px] font-semibold leading-7 text-wise-content">
+              Enter your account details
+            </h2>
 
-          {create.error ? (
-            <p className="text-sm text-wise-negative">{create.error.message}</p>
-          ) : null}
-        </form>
-      )}
-    </Card>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-wise-secondary">
+                Currency
+              </span>
+              {CURRENCIES.map((c) => (
+                <CurrencyRow
+                  key={c.code}
+                  currency={c}
+                  selected={c.code === currencyCode}
+                  onSelect={() => setCurrencyCode(c.code)}
+                />
+              ))}
+            </div>
+
+            <TextInput
+              label="Full name of account holder"
+              name="accountHolder"
+              required
+              value={accountHolder}
+              onChange={(e) => setAccountHolder(e.target.value)}
+              placeholder="Linh Nguyen"
+            />
+            <TextInput
+              label="Bank name"
+              name="bankName"
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              placeholder="Bangkok Bank"
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              disabled={create.isPending || !accountHolder}
+            >
+              {create.isPending ? "Creating…" : "Confirm"}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setStep(0)}
+              className="text-sm text-wise-forest underline"
+            >
+              Back
+            </button>
+
+            {create.error ? (
+              <p className="text-sm text-wise-negative">
+                {create.error.message}
+              </p>
+            ) : null}
+          </form>
+        )}
+      </Card>
+    </div>
   );
 }
