@@ -5,6 +5,8 @@
  * disk but is no longer registered (by user decision).
  * - create        (protected): merchant onboarding, owned by the signed-in user.
  * - getById       (public):    the /pay/[id] page reads this unauthenticated.
+ * - listMine      (protected): the dashboard store list — only the owner's merchants.
+ * - getMineById   (protected): owner-only store detail with recent payments.
  * - createPayment (public):    a traveler pays without signing in.
  *
  * All Wise calls go through the `wise` service interface — never axios directly.
@@ -59,6 +61,101 @@ export const merchantRouter = createTRPCRouter({
       return ctx.prisma.merchant.findUnique({
         where: { id: input.id },
       });
+    }),
+
+  /**
+   * List the signed-in user's merchants, newest first, each with a payment
+   * summary. Owner-scoped (every read filters by ctx.session.user.id) and
+   * deliberately narrow: no payment rows and never Payment.qrCode (a huge
+   * base64 data-URL). Exactly two queries — findMany + one groupBy — no N+1.
+   */
+  listMine: protectedProcedure.query(async ({ ctx }) => {
+    const merchants = await ctx.prisma.merchant.findMany({
+      where: { userId: ctx.session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        businessType: true,
+        targetCurrency: true,
+        targetCountry: true,
+        createdAt: true,
+      },
+    });
+
+    const summaries = await ctx.prisma.payment.groupBy({
+      by: ["merchantId"],
+      where: { merchant: { userId: ctx.session.user.id } },
+      _count: { _all: true },
+      _sum: { amount: true },
+    });
+    const byMerchantId = new Map(
+      summaries.map((s) => [s.merchantId, s] as const),
+    );
+
+    return merchants.map((merchant) => {
+      const summary = byMerchantId.get(merchant.id);
+      return {
+        ...merchant,
+        paymentCount: summary?._count._all ?? 0,
+        // Payment.amount is Float; round the sum to 2dp to avoid 59.999…
+        // artifacts. Formatting beyond that is the frontend's job.
+        totalReceived:
+          Math.round((summary?._sum.amount ?? 0) * 100) / 100,
+      };
+    });
+  }),
+
+  /**
+   * Owner-only store detail: the merchant plus its 10 most recent payments and
+   * a payment summary. Protected and ownership-filtered — findFirst scopes by
+   * { id, userId }, so a missing row and another user's row are the same
+   * NOT_FOUND (no existence leak). Payment selects stay narrow: never qrCode.
+   */
+  getMineById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const merchant = await ctx.prisma.merchant.findFirst({
+        where: { id: input.id, userId: ctx.session.user.id },
+        select: {
+          id: true,
+          name: true,
+          payoutAccount: true,
+          targetCurrency: true,
+          targetCountry: true,
+          businessType: true,
+          createdAt: true,
+          payments: {
+            select: {
+              id: true,
+              amount: true,
+              currency: true,
+              status: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          },
+        },
+      });
+      if (!merchant) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      // Safe to aggregate by merchantId alone: ownership was checked above.
+      const summary = await ctx.prisma.payment.aggregate({
+        where: { merchantId: input.id },
+        _count: { _all: true },
+        _sum: { amount: true },
+      });
+
+      return {
+        ...merchant,
+        paymentCount: summary._count._all,
+        // Float sum rounded to 2dp to avoid 59.999… artifacts; the frontend
+        // owns display formatting.
+        totalReceived: Math.round((summary._sum.amount ?? 0) * 100) / 100,
+      };
     }),
 
   /**

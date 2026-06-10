@@ -53,10 +53,14 @@ interface FakePayment {
 interface FakePrisma {
   merchant: {
     findUnique: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
   };
   payment: {
     create: ReturnType<typeof vi.fn>;
+    groupBy: ReturnType<typeof vi.fn>;
+    aggregate: ReturnType<typeof vi.fn>;
   };
 }
 
@@ -100,27 +104,36 @@ const validSession: FakeSession = {
 
 function makePrisma(overrides?: {
   merchantFindUnique?: ReturnType<typeof vi.fn>;
+  merchantFindMany?: ReturnType<typeof vi.fn>;
+  merchantFindFirst?: ReturnType<typeof vi.fn>;
   merchantCreate?: ReturnType<typeof vi.fn>;
   paymentCreate?: ReturnType<typeof vi.fn>;
+  paymentGroupBy?: ReturnType<typeof vi.fn>;
+  paymentAggregate?: ReturnType<typeof vi.fn>;
 }): FakePrisma {
   return {
     merchant: {
       findUnique: overrides?.merchantFindUnique ?? vi.fn(),
+      findMany: overrides?.merchantFindMany ?? vi.fn(),
+      findFirst: overrides?.merchantFindFirst ?? vi.fn(),
       create: overrides?.merchantCreate ?? vi.fn(),
     },
     payment: {
       create: overrides?.paymentCreate ?? vi.fn(),
+      groupBy: overrides?.paymentGroupBy ?? vi.fn(),
+      aggregate: overrides?.paymentAggregate ?? vi.fn(),
     },
   };
 }
 
 function buildCaller(session: FakeSession | null, prisma: FakePrisma) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument */
   const caller = createCaller({
     prisma,
     session,
     headers: new Headers(),
   } as any);
+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument */
   return caller;
 }
 
@@ -183,6 +196,224 @@ describe("merchant.getById", () => {
     expect(merchantFindUnique).toHaveBeenCalledWith({
       where: { id: "merchant_1" },
     });
+  });
+});
+
+describe("merchant.listMine", () => {
+  /** Two stores owned by the session user, newest first (as findMany returns them). */
+  const storeNewer = {
+    id: "merchant_2",
+    name: "Newer Shop",
+    businessType: "cafe",
+    targetCurrency: "THB",
+    targetCountry: "TH",
+    createdAt: new Date("2026-06-02"),
+  };
+  const storeOlder = {
+    id: "merchant_1",
+    name: "Older Shop",
+    businessType: null,
+    targetCurrency: "VND",
+    targetCountry: "VN",
+    createdAt: new Date("2026-06-01"),
+  };
+
+  test("rejects with UNAUTHORIZED when session is null", async () => {
+    const prisma = makePrisma();
+    const caller = buildCaller(null, prisma);
+    await expect(caller.merchant.listMine()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
+
+  test("returns the user's merchants newest first with payment summaries merged (0s when no payments)", async () => {
+    const merchantFindMany = vi
+      .fn()
+      .mockResolvedValue([storeNewer, storeOlder]);
+    // groupBy has a row for merchant_2 only — merchant_1 must come back with 0s.
+    const paymentGroupBy = vi.fn().mockResolvedValue([
+      { merchantId: "merchant_2", _count: { _all: 3 }, _sum: { amount: 150.5 } },
+    ]);
+    const prisma = makePrisma({ merchantFindMany, paymentGroupBy });
+    const caller = buildCaller(validSession, prisma);
+
+    const result = await caller.merchant.listMine();
+
+    expect(result.map((m) => m.id)).toEqual(["merchant_2", "merchant_1"]);
+    expect(result[0]).toMatchObject({
+      id: "merchant_2",
+      paymentCount: 3,
+      totalReceived: 150.5,
+    });
+    expect(result[1]).toMatchObject({
+      id: "merchant_1",
+      paymentCount: 0,
+      totalReceived: 0,
+    });
+  });
+
+  test("scopes both queries to the session user and keeps the select narrow (no payments, no qrCode)", async () => {
+    const merchantFindMany = vi.fn().mockResolvedValue([]);
+    const paymentGroupBy = vi.fn().mockResolvedValue([]);
+    const prisma = makePrisma({ merchantFindMany, paymentGroupBy });
+    const caller = buildCaller(validSession, prisma);
+
+    await caller.merchant.listMine();
+
+    expect(merchantFindMany).toHaveBeenCalledOnce();
+    type FindManyCall = {
+      where: Record<string, unknown>;
+      orderBy: Record<string, unknown>;
+      select: Record<string, unknown>;
+    };
+    const findManyArg = (merchantFindMany.mock.calls[0] as [FindManyCall])[0];
+    // Ownership scoping (bug class a).
+    expect(findManyArg.where).toEqual({ userId: validSession.user.id });
+    expect(findManyArg.orderBy).toEqual({ createdAt: "desc" });
+    // Payload bloat (bug class b): no payment rows, never qrCode.
+    expect(findManyArg.select).not.toHaveProperty("payments");
+    expect(findManyArg.select).not.toHaveProperty("qrCode");
+
+    // The groupBy is owner-scoped too.
+    expect(paymentGroupBy).toHaveBeenCalledOnce();
+    type GroupByCall = { where: Record<string, unknown> };
+    const groupByArg = (paymentGroupBy.mock.calls[0] as [GroupByCall])[0];
+    expect(groupByArg.where).toEqual({
+      merchant: { userId: validSession.user.id },
+    });
+  });
+
+  test("rounds totalReceived to 2dp (float-artifact sums come back clean)", async () => {
+    const merchantFindMany = vi.fn().mockResolvedValue([storeOlder]);
+    const paymentGroupBy = vi.fn().mockResolvedValue([
+      {
+        merchantId: "merchant_1",
+        _count: { _all: 2 },
+        _sum: { amount: 59.999999999 },
+      },
+    ]);
+    const prisma = makePrisma({ merchantFindMany, paymentGroupBy });
+    const caller = buildCaller(validSession, prisma);
+
+    const result = await caller.merchant.listMine();
+
+    expect(result[0]?.totalReceived).toBe(60);
+  });
+});
+
+describe("merchant.getMineById", () => {
+  const ownedStore = {
+    id: "merchant_1",
+    name: "Demo Shop",
+    payoutAccount: "TH123456789",
+    targetCurrency: "THB",
+    targetCountry: "TH",
+    businessType: "cafe",
+    createdAt: new Date("2026-06-01"),
+    payments: [
+      {
+        id: "payment_1",
+        amount: 100,
+        currency: "THB",
+        status: "incoming_payment_waiting",
+        createdAt: new Date("2026-06-02"),
+      },
+    ],
+  };
+
+  test("rejects with UNAUTHORIZED when session is null", async () => {
+    const prisma = makePrisma();
+    const caller = buildCaller(null, prisma);
+    await expect(
+      caller.merchant.getMineById({ id: "merchant_1" }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  test("returns the owned store with recent payments and the aggregate summary", async () => {
+    const merchantFindFirst = vi.fn().mockResolvedValue(ownedStore);
+    const paymentAggregate = vi.fn().mockResolvedValue({
+      _count: { _all: 1 },
+      _sum: { amount: 100 },
+    });
+    const prisma = makePrisma({ merchantFindFirst, paymentAggregate });
+    const caller = buildCaller(validSession, prisma);
+
+    const result = await caller.merchant.getMineById({ id: "merchant_1" });
+
+    expect(result).toMatchObject({
+      id: "merchant_1",
+      name: "Demo Shop",
+      paymentCount: 1,
+      totalReceived: 100,
+    });
+    expect(result.payments).toHaveLength(1);
+    expect(result.payments[0]).toMatchObject({
+      id: "payment_1",
+      amount: 100,
+      currency: "THB",
+      status: "incoming_payment_waiting",
+    });
+  });
+
+  test("scopes findFirst by BOTH id and userId (ownership — no existence leak)", async () => {
+    const merchantFindFirst = vi.fn().mockResolvedValue(ownedStore);
+    const paymentAggregate = vi.fn().mockResolvedValue({
+      _count: { _all: 0 },
+      _sum: { amount: null },
+    });
+    const prisma = makePrisma({ merchantFindFirst, paymentAggregate });
+    const caller = buildCaller(validSession, prisma);
+
+    await caller.merchant.getMineById({ id: "merchant_1" });
+
+    expect(merchantFindFirst).toHaveBeenCalledOnce();
+    type FindFirstCall = {
+      where: Record<string, unknown>;
+      select: {
+        payments: { select: Record<string, unknown> };
+      };
+    };
+    const findFirstArg = (merchantFindFirst.mock.calls[0] as [FindFirstCall])[0];
+    expect(findFirstArg.where).toEqual({
+      id: "merchant_1",
+      userId: validSession.user.id,
+    });
+    // Payload-bloat guard (bug class b): the nested payments select must stay
+    // narrow — qrCode is a base64 blob and must never be fetched here.
+    const paymentsSelect = findFirstArg.select.payments.select;
+    expect(paymentsSelect).not.toHaveProperty("qrCode");
+    expect(paymentsSelect).not.toHaveProperty("paymentUrl");
+    expect(Object.keys(paymentsSelect).sort()).toEqual([
+      "amount",
+      "createdAt",
+      "currency",
+      "id",
+      "status",
+    ]);
+  });
+
+  test("throws NOT_FOUND when findFirst returns null (missing or not owned)", async () => {
+    const merchantFindFirst = vi.fn().mockResolvedValue(null);
+    const prisma = makePrisma({ merchantFindFirst });
+    const caller = buildCaller(validSession, prisma);
+
+    await expect(
+      caller.merchant.getMineById({ id: "someone_elses_store" }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  test("rounds totalReceived to 2dp (float-artifact sums come back clean)", async () => {
+    const merchantFindFirst = vi.fn().mockResolvedValue(ownedStore);
+    const paymentAggregate = vi.fn().mockResolvedValue({
+      _count: { _all: 2 },
+      _sum: { amount: 59.999999999 },
+    });
+    const prisma = makePrisma({ merchantFindFirst, paymentAggregate });
+    const caller = buildCaller(validSession, prisma);
+
+    const result = await caller.merchant.getMineById({ id: "merchant_1" });
+
+    expect(result.totalReceived).toBe(60);
   });
 });
 
