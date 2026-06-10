@@ -4,7 +4,9 @@ type Tone = "positive" | "negative";
 
 /** Hairline-divided payments list row (no boxed cards): primary line + meta
  *  on the left, bold amount + sentiment status chip on the right. Render
- *  inside a list container — the divider is this row's bottom hairline. */
+ *  inside a list container — the divider is this row's bottom hairline.
+ *  `status` is optional: sentiment chips carry meaning, so non-terminal
+ *  states (pending/processing) render no chip rather than a wrong tone. */
 export function PaymentRow({
   primary,
   meta,
@@ -16,7 +18,7 @@ export function PaymentRow({
   primary: string;
   meta: string;
   amount: string;
-  status: string;
+  status?: string;
   tone?: Tone;
   className?: string;
 }) {
@@ -32,7 +34,7 @@ export function PaymentRow({
       </div>
       <div className="flex shrink-0 items-center gap-3">
         <p className="text-base font-bold text-wise-content">{amount}</p>
-        <StatusChip tone={tone}>{status}</StatusChip>
+        {status ? <StatusChip tone={tone}>{status}</StatusChip> : null}
       </div>
     </div>
   );

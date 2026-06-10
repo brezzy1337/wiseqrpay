@@ -3,36 +3,43 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 
-import { QrTile } from "~/app/_components/ui/QrTile";
+import { QrCard } from "~/app/_components/ui/QrCard";
 
 /**
- * The store's pay QR — encodes the absolute /pay/[id] URL. Client-side because
- * the absolute origin comes from window.location (same approach as the
- * onboarding success panel). Carries print-keep so the tile survives printing.
+ * The store's pay QR rendered in the signature QR-on-green motif (QrCard).
+ * Encodes the absolute /pay/[id] URL — client-side because the absolute
+ * origin comes from window.location (same approach as landing-qr.tsx).
+ * Used by the store detail page (md) and the printable poster (lg).
  */
 export default function StoreQr({
   merchantId,
   merchantName,
+  location,
+  size = "md",
+  className,
 }: {
   merchantId: string;
   merchantName: string;
+  location?: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const url = `${window.location.origin}/pay/${merchantId}`;
     // 640px source keeps the enlarged print rendition crisp; margin 4 is the
-    // QR spec's minimum quiet zone.
+    // QR spec's minimum quiet zone — the QR stays sacred.
     void QRCode.toDataURL(url, { width: 640, margin: 4 }).then(setQrDataUrl);
   }, [merchantId]);
 
   return (
-    // In print the code fills most of the printable width so it scans from
-    // across the counter; on screen it stays the standard 240px tile.
-    <QrTile
-      src={qrDataUrl}
-      alt={`Pay QR code for ${merchantName}`}
-      className="print-keep print:h-96 print:w-96"
+    <QrCard
+      qrSrc={qrDataUrl}
+      name={merchantName}
+      location={location}
+      size={size}
+      className={className}
     />
   );
 }

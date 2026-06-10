@@ -75,9 +75,13 @@ test.describe("merchant onboarding (session-injected)", () => {
     await expect(page.getByLabel("Amount")).toBeVisible();
 
     // Back on the dashboard, the new store shows up in the owner's list…
+    // (R3 redesign: the list heading is a time-of-day greeting computed
+    // server-side from UTC+8, so match all three variants.)
     await page.goto("/dashboard");
     await expect(
-      page.getByRole("heading", { name: "Your stores" }),
+      page.getByRole("heading", {
+        name: /good (morning|afternoon|evening),/i,
+      }),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "E2E Noodle Bar" }),
