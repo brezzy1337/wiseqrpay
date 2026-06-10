@@ -127,12 +127,13 @@ function makePrisma(overrides?: {
 }
 
 function buildCaller(session: FakeSession | null, prisma: FakePrisma) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument */
   const caller = createCaller({
     prisma,
     session,
     headers: new Headers(),
   } as any);
+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument */
   return caller;
 }
 
@@ -366,12 +367,29 @@ describe("merchant.getMineById", () => {
     await caller.merchant.getMineById({ id: "merchant_1" });
 
     expect(merchantFindFirst).toHaveBeenCalledOnce();
-    type FindFirstCall = { where: Record<string, unknown> };
+    type FindFirstCall = {
+      where: Record<string, unknown>;
+      select: {
+        payments: { select: Record<string, unknown> };
+      };
+    };
     const findFirstArg = (merchantFindFirst.mock.calls[0] as [FindFirstCall])[0];
     expect(findFirstArg.where).toEqual({
       id: "merchant_1",
       userId: validSession.user.id,
     });
+    // Payload-bloat guard (bug class b): the nested payments select must stay
+    // narrow — qrCode is a base64 blob and must never be fetched here.
+    const paymentsSelect = findFirstArg.select.payments.select;
+    expect(paymentsSelect).not.toHaveProperty("qrCode");
+    expect(paymentsSelect).not.toHaveProperty("paymentUrl");
+    expect(Object.keys(paymentsSelect).sort()).toEqual([
+      "amount",
+      "createdAt",
+      "currency",
+      "id",
+      "status",
+    ]);
   });
 
   test("throws NOT_FOUND when findFirst returns null (missing or not owned)", async () => {
