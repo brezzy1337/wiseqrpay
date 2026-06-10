@@ -1,0 +1,75 @@
+# CI/CD for the demo: every push to `demo` rebuilds the container and rolls the
+# existing Cloud Run service to it.
+#
+# Auth is keyless (Workload Identity Federation): the OIDC provider's attribute
+# condition only trusts tokens from this repository, and the github-deployer
+# service account holds least-privilege roles (run.developer, repo-scoped
+# artifactregistry.writer, actAs the runtime SA). The values below are resource
+# identifiers, not secrets.
+#
+# Deliberately NO database migration step: the live schema is managed manually
+# via `prisma db push` through cloud-sql-proxy (see infra/README.md) — the
+# checked-in migrations are stale and `migrate deploy` would fail against the
+# live database.
+name: Deploy demo to Cloud Run
+
+on:
+  push:
+    branches: [demo]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# One deploy at a time; queue (don't cancel) so every merged commit ships.
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: golden-hologram-465409-p1
+  REGION: asia-southeast1
+  SERVICE: wiseqrpay
+  IMAGE_BASE: asia-southeast1-docker.pkg.dev/golden-hologram-465409-p1/wiseqrpay/wiseqrpay
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC / WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/290796524365/locations/global/workloadIdentityPools/github/providers/github
+          service_account: github-deployer@golden-hologram-465409-p1.iam.gserviceaccount.com
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Artifact Registry auth
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Build and push image
+        run: |
+          docker build -t "${IMAGE_BASE}:${GITHUB_SHA}" -t "${IMAGE_BASE}:latest" .
+          docker push "${IMAGE_BASE}:${GITHUB_SHA}"
+          docker push "${IMAGE_BASE}:latest"
+
+      - name: Deploy to Cloud Run
+        # Image-only update: env vars, secrets, Cloud SQL attachment, and the
+        # runtime service account stay as Terraform (infra/) configured them.
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "${IMAGE_BASE}:${GITHUB_SHA}" \
+            --region "$REGION" \
+            --quiet
+
+      - name: Smoke check
+        run: |
+          URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --format="value(status.url)")
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/")
+          echo "GET $URL/ -> $code"
+          test "$code" = "200"
