@@ -5,7 +5,7 @@ export default function StoreNotFound() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white px-5 py-10">
       <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
-        <h1 className="font-sans text-[30px] font-semibold leading-[34px] text-wise-content">
+        <h1 className="font-sans text-[26px] font-extrabold leading-8 tracking-tight text-wise-content md:text-[34px] md:leading-10">
           Store not found
         </h1>
         <p className="text-wise-secondary">

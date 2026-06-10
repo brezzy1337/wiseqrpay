@@ -35,11 +35,20 @@ const BUSINESS_CATEGORIES: { category: string; subcategories: string[] }[] = [
   },
   {
     category: "Services",
-    subcategories: ["Tour guide", "Wellness and spa", "Repairs", "Other services"],
+    subcategories: [
+      "Tour guide",
+      "Wellness and spa",
+      "Repairs",
+      "Other services",
+    ],
   },
   {
     category: "Transport",
-    subcategories: ["Taxi and ride services", "Bike and scooter rental", "Boat tours"],
+    subcategories: [
+      "Taxi and ride services",
+      "Bike and scooter rental",
+      "Boat tours",
+    ],
   },
   {
     category: "Accommodation",
@@ -72,10 +81,10 @@ function ChooserCard({
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
-      className={`flex w-full items-start gap-3 rounded-2xl border-2 bg-white p-4 text-left transition motion-safe:active:scale-[0.99] ${
+      className={`flex w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition motion-safe:active:scale-[0.99] ${
         selected
-          ? "border-wise-forest"
-          : "border-wise-hairline hover:border-wise-border"
+          ? "border-wise-forest bg-white"
+          : "border-transparent bg-wise-neutral hover:brightness-[0.98]"
       }`}
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -89,7 +98,7 @@ function ChooserCard({
       <span
         aria-hidden
         className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-          selected ? "bg-wise-green" : "border-2 border-wise-border"
+          selected ? "bg-wise-green" : "border-2 border-wise-border bg-white"
         }`}
       >
         {selected ? (
@@ -157,7 +166,9 @@ export default function MerchantOnboarding({
   useEffect(() => {
     if (!merchant) return;
     const url = `${window.location.origin}/pay/${merchant.id}`;
-    void QRCode.toDataURL(url, { width: 320, margin: 1 }).then(setQrDataUrl);
+    // margin 4 = the QR spec's minimum quiet zone — consistent with every
+    // other generation site (landing, store, mini, poster).
+    void QRCode.toDataURL(url, { width: 320, margin: 4 }).then(setQrDataUrl);
   }, [merchant]);
 
   // ---------- Success panel ----------
@@ -293,7 +304,9 @@ export default function MerchantOnboarding({
         </ForestSurface>
       )}
 
-      <div className="rounded-3xl border border-wise-hairline bg-white p-6">
+      {/* Fills, not borders: the wizard card separates with a soft shadow so
+          its neutral-filled inputs stay legible against the white card. */}
+      <div className="rounded-3xl bg-white p-6 shadow-sm">
         {step === 0 ? (
           // ---------- Pre-step: account-type chooser ----------
           <form
@@ -443,9 +456,8 @@ export default function MerchantOnboarding({
                         const next = e.target.value;
                         setCategory(next);
                         setSubcategory(
-                          BUSINESS_CATEGORIES.find(
-                            (c) => c.category === next,
-                          )?.subcategories[0] ?? "",
+                          BUSINESS_CATEGORIES.find((c) => c.category === next)
+                            ?.subcategories[0] ?? "",
                         );
                       }}
                       helper="Category maps to Wise's business taxonomy — it affects verification, not your fees."

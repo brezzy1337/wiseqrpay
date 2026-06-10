@@ -1,10 +1,10 @@
-/** Sign-in gate illustration (replaces the 🔐 emoji): a friendly rounded padlock
- *  with a bright shackle and a keyhole shaped like a coin slot.
+/** Sign-in gate mark: a simple line padlock on a neutral disc. Redesign canon:
+ *  bright green means "tap here", so the mark stays neutral/forest — no green
+ *  surface, no sparkle accents.
  *
  *  NOTE: SVG fill/stroke attributes can't take Tailwind classes, so the hex
- *  literals below mirror the named tokens in tailwind.config.ts
- *  (#9FE870 = wise-green, #163300 = wise-forest, #FFEB69 = wise-yellow,
- *  #A0E1E1 = wise-blue) and must stay in sync. */
+ *  literals mirror tailwind.config.ts (#EDEFEC = wise-neutral,
+ *  #163300 = wise-forest) and must stay in sync. */
 export function LockMark({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -14,31 +14,29 @@ export function LockMark({ className = "" }: { className?: string }) {
       className={className}
       fill="none"
     >
-      {/* sparkle accents */}
-      <path d="M40 44l4 12 12 4-12 4-4 12-4-12-12-4 12-4z" fill="#FFEB69" />
-      <circle cx="162" cy="60" r="6" fill="#A0E1E1" />
+      {/* neutral disc */}
+      <circle cx="100" cy="100" r="84" fill="#EDEFEC" />
 
       {/* shackle */}
       <path
-        d="M66 92V74a34 34 0 0 1 68 0v18"
-        stroke="#9FE870"
-        strokeWidth="12"
+        d="M72 96V78a28 28 0 0 1 56 0v18"
+        stroke="#163300"
+        strokeWidth="10"
         strokeLinecap="round"
       />
       {/* body */}
-      <rect x="46" y="90" width="108" height="88" rx="24" fill="#9FE870" />
       <rect
-        x="46"
-        y="90"
-        width="108"
-        height="88"
-        rx="24"
+        x="56"
+        y="94"
+        width="88"
+        height="68"
+        rx="18"
         stroke="#163300"
-        strokeWidth="5"
+        strokeWidth="10"
       />
       {/* keyhole */}
-      <circle cx="100" cy="126" r="13" fill="#163300" />
-      <path d="M100 126l7 30h-14z" fill="#163300" />
+      <circle cx="100" cy="122" r="9" fill="#163300" />
+      <path d="M100 124l5 18h-10z" fill="#163300" />
     </svg>
   );
 }

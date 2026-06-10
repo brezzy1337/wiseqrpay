@@ -54,7 +54,7 @@ export default async function StoreDetailPage({
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-white px-5 py-10">
-      <div className="flex w-full max-w-2xl flex-col gap-8">
+      <div className="flex w-full max-w-2xl flex-col gap-8 md:max-w-4xl">
         <header className="flex flex-col gap-4">
           <Link
             href="/dashboard"
@@ -76,65 +76,69 @@ export default async function StoreDetailPage({
           </div>
         </header>
 
-        {/* Store info — neutral fill instead of a bordered card. */}
-        <div className="rounded-3xl bg-wise-neutral p-6">
-          <dl className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <dt className="text-sm text-wise-secondary">Payout account</dt>
-              <dd className="break-words text-sm font-semibold text-wise-content">
-                {store.payoutAccount}
-              </dd>
-            </div>
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <dt className="text-sm text-wise-secondary">
-                Country / currency
-              </dt>
-              <dd className="text-sm font-semibold text-wise-content">
-                {store.targetCountry} · {store.targetCurrency}
-              </dd>
-            </div>
-            {store.businessType ? (
+        {/* Info + QR share a two-column band on desktop so the page earns its
+            width; payments run full-width below. */}
+        <div className="grid items-start gap-8 md:grid-cols-2">
+          {/* Store info — neutral fill instead of a bordered card. */}
+          <div className="rounded-3xl bg-wise-neutral p-6">
+            <dl className="flex flex-col gap-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <dt className="text-sm text-wise-secondary">
-                  Type of business
-                </dt>
-                <dd className="text-sm font-semibold text-wise-content">
-                  {store.businessType}
+                <dt className="text-sm text-wise-secondary">Payout account</dt>
+                <dd className="break-words text-sm font-semibold text-wise-content">
+                  {store.payoutAccount}
                 </dd>
               </div>
-            ) : null}
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <dt className="text-sm text-wise-secondary">Created</dt>
-              <dd className="text-sm font-semibold text-wise-content">
-                {formatDate(store.createdAt)}
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        {/* The pay QR — the signature QR-on-green motif. Printing is the
-            poster route's job. */}
-        <section className="flex flex-col items-center gap-4">
-          <h2 className="text-[22px] font-semibold leading-7 text-wise-content">
-            Your pay QR
-          </h2>
-          <StoreQr
-            merchantId={store.id}
-            merchantName={store.name}
-            location={store.targetCountry}
-          />
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            <PillButton href={`/dashboard/${store.id}/poster`} variant="dark">
-              Print poster
-            </PillButton>
-            <Link
-              href={`/pay/${store.id}`}
-              className="text-sm font-semibold text-wise-forest underline underline-offset-4"
-            >
-              Open pay page
-            </Link>
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <dt className="text-sm text-wise-secondary">
+                  Country / currency
+                </dt>
+                <dd className="text-sm font-semibold text-wise-content">
+                  {store.targetCountry} · {store.targetCurrency}
+                </dd>
+              </div>
+              {store.businessType ? (
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <dt className="text-sm text-wise-secondary">
+                    Type of business
+                  </dt>
+                  <dd className="text-sm font-semibold text-wise-content">
+                    {store.businessType}
+                  </dd>
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <dt className="text-sm text-wise-secondary">Created</dt>
+                <dd className="text-sm font-semibold text-wise-content">
+                  {formatDate(store.createdAt)}
+                </dd>
+              </div>
+            </dl>
           </div>
-        </section>
+
+          {/* The pay QR — the signature QR-on-green motif. Printing is the
+            poster route's job. */}
+          <section className="flex flex-col items-center gap-4">
+            <h2 className="text-[22px] font-semibold leading-7 text-wise-content">
+              Your pay QR
+            </h2>
+            <StoreQr
+              merchantId={store.id}
+              merchantName={store.name}
+              location={store.targetCountry}
+            />
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              <PillButton href={`/dashboard/${store.id}/poster`} variant="dark">
+                Print poster
+              </PillButton>
+              <Link
+                href={`/pay/${store.id}`}
+                className="text-sm font-semibold text-wise-forest underline underline-offset-4"
+              >
+                Open pay page
+              </Link>
+            </div>
+          </section>
+        </div>
 
         <section className="flex flex-col gap-2">
           <div className="flex flex-wrap items-baseline justify-between gap-2">

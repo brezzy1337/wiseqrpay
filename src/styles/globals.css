@@ -6,16 +6,6 @@ body {
   @apply bg-white font-sans text-wise-content antialiased;
 }
 
-@layer components {
-  /* Display headline — redesign canon: Inter Extra Bold, SENTENCE CASE
-     (the Archivo-Black all-caps era is over). Kept as a compatibility
-     helper until screens migrate off it in later slices. */
-  .wise-display {
-    @apply font-display font-extrabold leading-[0.95] tracking-tight;
-    letter-spacing: -0.02em;
-  }
-}
-
 @layer utilities {
   /* Fine grain/noise overlay for tapestry depth (inline SVG feTurbulence). */
   .tapestry-grain::after {

@@ -22,7 +22,9 @@ const SIZES: Record<Size, string> = {
 };
 
 const BASE =
-  "inline-flex items-center justify-center rounded-full font-semibold transition-[transform,filter] duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]";
+  // Disabled pills drop to a neutral fill — a faded action colour would still
+  // read as "tap here", which the colour rule forbids on non-actionable controls.
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full font-semibold transition-[transform,filter] duration-150 ease-out disabled:cursor-not-allowed disabled:bg-wise-neutral disabled:text-wise-secondary disabled:hover:translate-y-0 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]";
 
 interface StyleProps {
   variant?: Variant;

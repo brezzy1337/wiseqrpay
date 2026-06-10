@@ -28,7 +28,7 @@ export default function StoreMiniQr({
   }, [merchantId]);
 
   return (
-    <div className="flex w-full max-w-[200px] flex-col items-stretch gap-3 rounded-3xl bg-wise-green p-4">
+    <div className="flex w-full max-w-52 flex-col items-stretch gap-3 rounded-3xl bg-wise-green p-4">
       <div className="flex items-center justify-center rounded-2xl bg-white p-2">
         {qrDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

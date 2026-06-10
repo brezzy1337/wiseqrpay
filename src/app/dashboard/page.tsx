@@ -39,7 +39,7 @@ export default async function DashboardPage() {
             <LockMark className="h-28 w-28" />
           </div>
           <h1
-            className="font-sans text-[30px] font-semibold leading-[34px] text-wise-content motion-safe:animate-fade-up"
+            className="font-sans text-[26px] font-extrabold leading-8 tracking-tight text-wise-content motion-safe:animate-fade-up md:text-[34px] md:leading-10"
             style={staggerStyle(120)}
           >
             Merchant dashboard
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
       <main className="flex min-h-screen flex-col items-center bg-white px-5 py-10">
         <div className="w-full max-w-md">
           <div className="print-hide mb-6 flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full bg-wise-green" />
+            <span className="inline-block h-2 w-2 rounded-full bg-wise-positive" />
             <p className="text-sm text-wise-secondary">
               Signed in as {session.user.name ?? "merchant"}
             </p>
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
             {greetingWord()}, {firstName}
           </h1>
           <div className="flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full bg-wise-green" />
+            <span className="inline-block h-2 w-2 rounded-full bg-wise-positive" />
             <p className="text-sm text-wise-secondary">
               Signed in as {session.user.name ?? "merchant"}
             </p>
