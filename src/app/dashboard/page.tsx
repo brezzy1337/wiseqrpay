@@ -31,7 +31,7 @@ export default async function DashboardPage() {
             Sign in to onboard your shop and generate a WiseQRPay QR.
           </p>
           <Link
-            href="/api/auth/signin"
+            href="/api/auth/signin?callbackUrl=/dashboard"
             className={buttonClasses({
               fullWidth: true,
               className: "max-w-xs text-center motion-safe:animate-fade-up",

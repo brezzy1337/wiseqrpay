@@ -78,7 +78,7 @@ export default async function Home() {
             </p>
           ) : (
             <Link
-              href="/api/auth/signin"
+              href="/api/auth/signin?callbackUrl=/dashboard"
               className="text-center text-sm font-medium text-wise-green underline underline-offset-4"
             >
               Merchant sign in
