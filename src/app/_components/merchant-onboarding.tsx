@@ -185,6 +185,9 @@ export default function MerchantOnboarding() {
       </ForestSurface>
 
       <Card>
+        <p className="mb-2 text-sm font-medium text-wise-secondary">
+          Step {step === 0 ? 1 : 2} of 2
+        </p>
         <ProgressBar value={step === 0 ? 50 : 100} />
 
         {step === 0 ? (

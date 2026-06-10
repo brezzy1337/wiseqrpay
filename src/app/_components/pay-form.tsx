@@ -27,7 +27,9 @@ export default function PayForm({
   const [shopQrDataUrl, setShopQrDataUrl] = useState<string | null>(null);
   useEffect(() => {
     const url = `${window.location.origin}/pay/${merchantId}`;
-    void QRCode.toDataURL(url, { width: 320, margin: 1 }).then(setShopQrDataUrl);
+    void QRCode.toDataURL(url, { width: 320, margin: 1 }).then(
+      setShopQrDataUrl,
+    );
   }, [merchantId]);
 
   const pay = api.merchant.createPayment.useMutation();

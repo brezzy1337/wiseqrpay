@@ -16,7 +16,7 @@ export default async function Home() {
       <ForestSurface
         as="main"
         className="flex min-h-screen flex-col px-5 py-10"
-        contentClassName="stagger mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col"
+        contentClassName="stagger mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col md:max-w-2xl lg:max-w-3xl"
       >
         {/* Wordmark */}
         <div className="flex items-center gap-2 motion-safe:animate-fade-up">
@@ -28,7 +28,7 @@ export default async function Home() {
 
         <div className="stagger flex flex-1 flex-col items-start justify-center gap-7 py-12">
           <div className="motion-safe:animate-fade-up" style={staggerStyle(60)}>
-            <ScanPayMark className="h-40 w-40 drop-shadow-xl" />
+            <ScanPayMark className="h-40 w-40 drop-shadow-xl md:h-48 md:w-48" />
           </div>
 
           <Display
@@ -43,7 +43,7 @@ export default async function Home() {
           </Display>
 
           <p
-            className="max-w-xs text-lg leading-relaxed text-white motion-safe:animate-fade-up"
+            className="max-w-xs text-lg leading-relaxed text-white motion-safe:animate-fade-up md:max-w-sm"
             style={staggerStyle(220)}
           >
             Onboard your shop in seconds and get a tourist-ready QR. Travelers
@@ -54,7 +54,7 @@ export default async function Home() {
         {/* The content wrapper carries `stagger`, so this slot can use the
             shared staggerStyle utility like every other revealed block. */}
         <div
-          className="flex flex-col gap-4 motion-safe:animate-fade-up"
+          className="flex flex-col gap-4 motion-safe:animate-fade-up md:max-w-sm"
           style={staggerStyle(300)}
         >
           <Link

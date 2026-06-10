@@ -8,6 +8,9 @@ import PayForm from "~/app/_components/pay-form";
 
 export default function Preview() {
   if (process.env.NODE_ENV !== "development") notFound();
+  // Safe to mount unauthenticated in dev: MerchantOnboarding's create mutation
+  // is a protectedProcedure (rejects without a session), and PayForm's
+  // createPayment 404s on the fake "preview" id — no write path is exposed.
   return (
     <main className="flex min-h-screen flex-col items-center gap-10 bg-white px-5 py-10">
       <div className="w-full max-w-md">
