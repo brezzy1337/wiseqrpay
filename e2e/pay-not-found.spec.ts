@@ -11,6 +11,6 @@ test("unknown pay link shows merchant-not-found @live", async ({ page }) => {
   await expect(
     page.getByText("This payment link is invalid or has expired."),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Back home" }).click();
+  await page.getByRole("link", { name: "Go to wiseqrpay.com" }).click();
   await expect(page).toHaveURL(/\/$/);
 });

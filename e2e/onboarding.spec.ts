@@ -70,7 +70,7 @@ test.describe("merchant onboarding (session-injected)", () => {
     // The QR's hosted pay URL actually works for a traveler.
     await page.getByRole("link", { name: "Open pay page" }).click();
     await expect(
-      page.getByRole("heading", { name: /pay e2e noodle bar/i }),
+      page.getByRole("heading", { name: /paying e2e noodle bar/i }),
     ).toBeVisible();
     await expect(page.getByLabel("Amount")).toBeVisible();
 
