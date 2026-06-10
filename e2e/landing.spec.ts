@@ -7,7 +7,8 @@ test("landing hero renders and CTA reaches the sign-in gate @live", async ({
 }) => {
   await page.goto("/");
 
-  await expect(page.getByText("WiseQRPay").first()).toBeVisible();
+  // Wordmark is lowercase `wiseqrpay` post-redesign; match case-insensitively.
+  await expect(page.getByText(/wiseqrpay/i).first()).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /get paid\s*from abroad/i }),
   ).toBeVisible();

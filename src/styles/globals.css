@@ -6,15 +6,6 @@ body {
   @apply bg-white font-sans text-wise-content antialiased;
 }
 
-@layer components {
-  /* Loud all-caps display headline — Archivo Black, tightened. */
-  .wise-display {
-    @apply font-display uppercase leading-[0.92] tracking-tight;
-    /* Archivo Black is heavy; pull the tracking in a touch for the poster feel. */
-    letter-spacing: -0.02em;
-  }
-}
-
 @layer utilities {
   /* Fine grain/noise overlay for tapestry depth (inline SVG feTurbulence). */
   .tapestry-grain::after {
@@ -54,6 +45,14 @@ body {
   .tapestry-grain::after,
   .print-no-decor {
     display: none !important;
+  }
+  /* The QR poster prints as the full-bleed green sheet (the poster route owns
+     printing). Exact color keeps the bright green ink; filling the page height
+     yields A-series proportions on A5+ paper. */
+  .print-poster {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    min-height: 100vh;
   }
 }
 

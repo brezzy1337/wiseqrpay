@@ -1,91 +1,105 @@
 import Link from "next/link";
 
-import { buttonClasses } from "~/app/_components/ui/Button";
-import { Display } from "~/app/_components/ui/Display";
-import { ForestSurface } from "~/app/_components/ui/ForestSurface";
-import { ScanPayMark } from "~/app/_components/ui/illustrations/ScanPayMark";
+import LandingQr from "~/app/_components/landing-qr";
+import { pillButtonClasses } from "~/app/_components/ui/PillButton";
 import { staggerStyle } from "~/app/_components/ui/stagger";
 import { auth } from "~/server/auth/auth";
-import { HydrateClient } from "~/trpc/server.ts";
 
+/**
+ * Landing — clean white page. Bright green appears only where it means
+ * "tap here": the two pills and the QrCard surface. The forest footer band
+ * carries the one green-text moment (sanctioned: green text on forest).
+ */
 export default async function Home() {
   const session = await auth();
 
   return (
-    <HydrateClient>
-      <ForestSurface
-        as="main"
-        className="flex min-h-screen flex-col px-5 py-10"
-        contentClassName="stagger mx-auto flex min-h-[80vh] w-full max-w-md flex-1 flex-col md:max-w-2xl lg:max-w-3xl"
-      >
-        {/* Wordmark */}
-        <div className="flex items-center gap-2 motion-safe:animate-fade-up">
-          <span className="inline-block h-4 w-4 rounded-full bg-wise-green" />
-          <span className="text-2xl font-bold tracking-tight text-wise-green">
-            WiseQRPay
-          </span>
-        </div>
-
-        <div className="stagger flex flex-1 flex-col items-start justify-center gap-7 py-12">
-          <div className="motion-safe:animate-fade-up" style={staggerStyle(60)}>
-            <ScanPayMark className="h-40 w-40 drop-shadow-xl md:h-48 md:w-48" />
-          </div>
-
-          <Display
-            tone="green"
-            size="xl"
-            className="motion-safe:animate-fade-up"
-            style={staggerStyle(140)}
-          >
-            Get paid
-            <br />
-            from abroad
-          </Display>
-
-          <p
-            className="max-w-xs text-lg leading-relaxed text-white motion-safe:animate-fade-up md:max-w-sm"
-            style={staggerStyle(220)}
-          >
-            Onboard your shop in seconds and get a tourist-ready QR. Travelers
-            scan it and pay you via Wise.
-          </p>
-        </div>
-
-        {/* The content wrapper carries `stagger`, so this slot can use the
-            shared staggerStyle utility like every other revealed block. */}
-        <div
-          className="flex flex-col gap-4 motion-safe:animate-fade-up md:max-w-sm"
-          style={staggerStyle(300)}
+    <main className="flex min-h-screen flex-col bg-white">
+      {/* Nav row */}
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-6">
+        <Link
+          href="/"
+          className="text-2xl font-extrabold tracking-tight text-wise-forest"
         >
-          <Link
-            href="/dashboard"
-            className={buttonClasses({
-              fullWidth: true,
-              className: "text-center",
-            })}
-          >
-            Get started
-          </Link>
+          wiseqrpay
+        </Link>
+        <nav className="flex items-center gap-6">
           {session?.user ? (
-            <p className="text-center text-sm text-white/60">
-              Signed in as {session.user.name} ·{" "}
+            <>
               <Link
                 href="/api/auth/signout"
-                className="text-wise-green underline"
+                className="text-sm font-semibold text-wise-forest underline underline-offset-4"
               >
                 Sign out
               </Link>
-            </p>
+              <Link href="/dashboard" className={pillButtonClasses()}>
+                Open dashboard
+              </Link>
+            </>
           ) : (
-            <Link
-              href="/api/auth/signin?callbackUrl=/dashboard"
-              className="text-center text-sm font-medium text-wise-green underline underline-offset-4"
-            >
-              Merchant sign in
-            </Link>
+            <>
+              <Link
+                href="/api/auth/signin?callbackUrl=/dashboard"
+                className="text-sm font-semibold text-wise-forest underline underline-offset-4"
+              >
+                Merchant sign in
+              </Link>
+              <Link href="/dashboard" className={pillButtonClasses()}>
+                Get started
+              </Link>
+            </>
           )}
+        </nav>
+      </header>
+
+      {/* Hero — two columns on desktop, stacked on mobile */}
+      <section className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-12 md:grid-cols-2 md:py-16">
+        <div className="stagger flex flex-col items-start gap-6">
+          <h1
+            className="text-[44px] font-extrabold leading-[0.95] tracking-tight text-wise-content motion-safe:animate-fade-up md:text-[88px]"
+            style={staggerStyle(0)}
+          >
+            Get paid
+            <br />
+            from abroad.
+          </h1>
+          <p
+            className="max-w-md text-base leading-6 text-wise-secondary motion-safe:animate-fade-up"
+            style={staggerStyle(80)}
+          >
+            Onboard your shop in seconds and get a tourist-ready QR. Travelers
+            scan it and pay you through Wise.
+          </p>
+          <div
+            className="flex flex-col items-start gap-3 motion-safe:animate-fade-up"
+            style={staggerStyle(160)}
+          >
+            <Link
+              href="/dashboard"
+              className={pillButtonClasses({ size: "lg" })}
+            >
+              Set up my shop QR
+            </Link>
+            <p className="text-[13px] text-wise-tertiary">
+              Free to set up · No card machine
+            </p>
+          </div>
         </div>
-      </ForestSurface>
-    </HydrateClient>
+
+        <div className="flex justify-center md:justify-end">
+          <LandingQr />
+        </div>
+      </section>
+
+      {/* Forest footer band */}
+      <footer className="w-full bg-wise-forest">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-12 md:flex-row md:items-center md:justify-between">
+          <p className="text-xl font-extrabold text-wise-green">
+            Tourist-ready overnight.
+          </p>
+          <p className="text-[13px] text-white/80">Powered by Wise</p>
+        </div>
+      </footer>
+    </main>
   );
 }
