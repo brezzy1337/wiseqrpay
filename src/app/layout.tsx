@@ -1,8 +1,17 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
+import { Inter } from "next/font/google";
 
 import { TRPCReactProvider } from "../trpc/react.tsx";
+
+// Inter is the single face of the redesign (display = Inter Extra Bold).
+// Variable font, so 400/600/700/800 all ship from this one declaration.
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "WiseQRPay",
@@ -14,21 +23,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        {/* Inter (body) + Archivo Black (display stand-in for Wise Sans), loaded at
-            runtime (not next/font) so the build never depends on a font fetch. */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={inter.variable}>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>

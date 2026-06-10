@@ -6,24 +6,30 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", ...fontFamily.sans],
-        // Loud all-caps display face. Archivo Black is a free OFL stand-in for
-        // Wise Sans (proprietary) — used ONLY for big feature headlines.
-        display: ['"Archivo Black"', "Inter", ...fontFamily.sans],
+        // Inter, loaded via next/font/google in src/app/layout.tsx.
+        sans: ["var(--font-inter)", "Inter", ...fontFamily.sans],
+        // Redesign (2026-06): the display face is Inter Extra Bold, sentence
+        // case — Archivo Black is gone. `display` is kept as an alias of the
+        // sans stack so legacy `font-display` usage still renders (in Inter)
+        // until later slices remove it.
+        display: ["var(--font-inter)", "Inter", ...fontFamily.sans],
       },
-      // Wise Design tokens (docs.wise.design/foundations/colour)
+      // Wise redesign tokens (.claude/rules/wise-design.md — canonical)
       colors: {
         wise: {
-          green: "#9FE870", // Bright Green — primary button / accent / text on forest
-          forest: "#163300", // Forest Green — dark surfaces, text on green, links
-          content: "#0E0F0C", // Content Primary
-          secondary: "#454745", // Content Secondary — body text
-          tertiary: "#6A6C6A", // Content Tertiary — placeholders / "Optional"
-          border: "#868685", // Interactive Secondary — input/checkbox borders
-          neutral: "rgba(22,51,0,0.08)", // Background Neutral
-          hairline: "rgba(14,15,12,0.12)", // Border Neutral
-          negative: "#A8200D", // Sentiment Negative
-          positive: "#2F5711", // Sentiment Positive
+          green: "#9FE870", // Action ONLY: primary pills + QR hero/poster card surface
+          forest: "#163300", // Text on bright green, links, dark surfaces
+          content: "#0E0F0C", // Headings, body, amounts
+          secondary: "#454745", // Supporting copy
+          tertiary: "#6A6C6A", // Captions, meta, helper text, input labels
+          border: "#868685", // Legacy interactive-secondary border (pre-redesign screens)
+          neutral: "#EDEFEC", // Surface tint — input fills, cards, numpad keys
+          hairline: "#E8EAE6", // 1px list dividers only
+          negative: "#A8200D", // Errors only
+          "negative-tint": "#F7E5E2", // Error chip/badge background
+          positive: "#2F5711", // "Received" status + "Active" chip ONLY. Never buttons.
+          "positive-tint": "#E8F1DF", // Positive chip background
+          "btn-secondary": "#E9EDE6", // Secondary pill fill (forest text)
           warning: "#EDC843", // Sentiment Warning
           // Expressive secondary brights — used in tapestries / accents.
           orange: "#FFC091",
@@ -33,7 +39,9 @@ export default {
           dark: "#121511", // Base Dark
         },
       },
-      // Wise radius scale (docs.wise.design/foundations/radius — desktop).
+      // Legacy wise-* radius names kept so pre-redesign screens still compile.
+      // Redesign scale: inputs r12 (rounded-xl), cards r16–24 (rounded-2xl /
+      // rounded-3xl), QR hero card r32 (rounded-[32px]).
       borderRadius: {
         "wise-sm": "16px",
         "wise-md": "20px",

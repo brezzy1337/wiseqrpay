@@ -7,10 +7,11 @@ body {
 }
 
 @layer components {
-  /* Loud all-caps display headline — Archivo Black, tightened. */
+  /* Display headline — redesign canon: Inter Extra Bold, SENTENCE CASE
+     (the Archivo-Black all-caps era is over). Kept as a compatibility
+     helper until screens migrate off it in later slices. */
   .wise-display {
-    @apply font-display uppercase leading-[0.92] tracking-tight;
-    /* Archivo Black is heavy; pull the tracking in a touch for the poster feel. */
+    @apply font-display font-extrabold leading-[0.95] tracking-tight;
     letter-spacing: -0.02em;
   }
 }
