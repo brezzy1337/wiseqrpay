@@ -56,3 +56,7 @@ yarn-error.log*
 
 # design-review screenshot output
 preview-shots/
+
+# playwright e2e output
+playwright-report/
+test-results/
