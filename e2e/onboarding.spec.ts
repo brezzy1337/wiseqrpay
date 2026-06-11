@@ -41,12 +41,20 @@ test.describe("merchant onboarding (session-injected)", () => {
     const step1Heading = page.getByRole("heading", {
       name: "Choose your country & currency",
     });
-    if (await step1Heading.isVisible()) {
-      await page
-        .getByRole("button", { name: /setting up a business instead/i })
-        .click();
+    const businessSwitch = page.getByRole("button", {
+      name: /setting up a business instead/i,
+    });
+    const addBusiness = page.getByRole("button", {
+      name: /add a business/i,
+    });
+    // Auto-retrying wait for whichever entry point rendered — a bare
+    // isVisible() race here could silently pick the wrong branch on a cold
+    // dev-server compile.
+    await expect(businessSwitch.or(addBusiness)).toBeVisible();
+    if (await businessSwitch.isVisible()) {
+      await businessSwitch.click();
     } else {
-      await page.getByRole("button", { name: /add a business/i }).click();
+      await addBusiness.click();
     }
 
     // Step 1 of 3 — country & currency. Pick SGD explicitly so the merchant's

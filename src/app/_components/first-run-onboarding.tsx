@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 
-import MerchantOnboarding from "~/app/_components/merchant-onboarding";
+import MerchantOnboarding, {
+  type AccountType,
+} from "~/app/_components/merchant-onboarding";
 
 /**
  * First-run onboarding for a signed-in user with no stores. Personal is the
@@ -18,7 +20,7 @@ export default function FirstRunOnboarding({
   /** The signed-in user's display name — pre-fills the personal name field. */
   defaultName?: string;
 }) {
-  const [mode, setMode] = useState<"personal" | "business">("personal");
+  const [mode, setMode] = useState<AccountType>("personal");
   const [created, setCreated] = useState(false);
 
   return (

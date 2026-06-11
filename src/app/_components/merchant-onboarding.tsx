@@ -14,7 +14,13 @@ import { api, type RouterOutputs } from "~/trpc/react";
 
 type Merchant = RouterOutputs["merchant"]["create"];
 
-type AccountType = "personal" | "business";
+export type AccountType = "personal" | "business";
+
+/** The sentinel Merchant.businessType value for personal QRs — written here
+ *  on create and read back by the dashboard's personal/business partition.
+ *  businessType is a plain String in Prisma, so this constant is the only
+ *  thing keeping writer and reader in sync. */
+export const PERSONAL_BUSINESS_TYPE = "Personal";
 
 /** UI-layer category list ONLY — a static stand-in for the demo. Deliberately
  *  NOT imported from wiseTypes' WISE_BUSINESS_CATEGORIES (frozen, out of
@@ -275,9 +281,10 @@ export default function MerchantOnboarding({
         : accountHolder,
       targetCurrency: selectedCurrency.code,
       targetCountry: selectedCurrency.country,
-      // Personal merchants map to the literal "Personal"; business merchants
+      // Personal merchants map to the shared sentinel; business merchants
       // map to the chosen first-level category.
-      businessType: accountType === "personal" ? "Personal" : category,
+      businessType:
+        accountType === "personal" ? PERSONAL_BUSINESS_TYPE : category,
     });
   }
 

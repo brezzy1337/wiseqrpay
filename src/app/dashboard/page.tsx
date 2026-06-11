@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import AddStore from "~/app/_components/add-store";
 import FirstRunOnboarding from "~/app/_components/first-run-onboarding";
+import { PERSONAL_BUSINESS_TYPE } from "~/app/_components/merchant-onboarding";
 import { formatDate, formatMoney } from "~/app/_components/format";
 import StoreMiniQr from "~/app/_components/store-mini-qr";
 import { buttonClasses } from "~/app/_components/ui/Button";
@@ -165,7 +166,7 @@ export default async function DashboardPage() {
   // Partition: the first "Personal" merchant is the user's personal QR; any
   // additional personal rows simply stay in the general list with their label.
   const personalStore = stores.find(
-    (store) => store.businessType === "Personal",
+    (store) => store.businessType === PERSONAL_BUSINESS_TYPE,
   );
   const businesses = stores.filter((store) => store.id !== personalStore?.id);
 

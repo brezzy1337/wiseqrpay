@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import MerchantOnboarding from "~/app/_components/merchant-onboarding";
+import MerchantOnboarding, {
+  type AccountType,
+} from "~/app/_components/merchant-onboarding";
 import { PillButton } from "~/app/_components/ui/PillButton";
 
 /**
@@ -30,7 +32,7 @@ export default function AddStore({
   variant?: "primary" | "secondary";
   fullWidth?: boolean;
   /** Locks the embedded wizard to one account type (skips the chooser). */
-  initialAccountType?: "personal" | "business";
+  initialAccountType?: AccountType;
   /** Pre-fills the personal branch's name field (signed-in display name). */
   defaultName?: string;
 }) {
