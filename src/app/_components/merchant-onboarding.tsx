@@ -14,7 +14,13 @@ import { api, type RouterOutputs } from "~/trpc/react";
 
 type Merchant = RouterOutputs["merchant"]["create"];
 
-type AccountType = "personal" | "business";
+export type AccountType = "personal" | "business";
+
+/** The sentinel Merchant.businessType value for personal QRs — written here
+ *  on create and read back by the dashboard's personal/business partition.
+ *  businessType is a plain String in Prisma, so this constant is the only
+ *  thing keeping writer and reader in sync. */
+export const PERSONAL_BUSINESS_TYPE = "Personal";
 
 /** UI-layer category list ONLY — a static stand-in for the demo. Deliberately
  *  NOT imported from wiseTypes' WISE_BUSINESS_CATEGORIES (frozen, out of
@@ -122,6 +128,8 @@ function ChooserCard({
 export default function MerchantOnboarding({
   onCreated,
   embedded = false,
+  initialAccountType,
+  defaultName,
 }: {
   /** Called after the create mutation succeeds — lets a server-rendered parent
    *  (the dashboard store list) refresh itself. Optional and backward compatible. */
@@ -130,10 +138,25 @@ export default function MerchantOnboarding({
    *  list). Suppresses the brand band so a workflow screen keeps one focal
    *  point; the first-run flow and the success celebration are unchanged. */
   embedded?: boolean;
+  /** When set, the account type is locked: the step-0 chooser is skipped
+   *  entirely (the wizard starts at step 1) and the chooser back-link and the
+   *  success-panel reset link disappear — the parent owns mode switching.
+   *  When absent the wizard behaves exactly as before (chooser first). */
+  initialAccountType?: AccountType;
+  /** Pre-fills the name field on the personal branch (the signed-in user's
+   *  display name). The business branch ignores it. */
+  defaultName?: string;
 }) {
+  // Locked mode = the parent chose the account type up front.
+  const locked = initialAccountType !== undefined;
+  const initialName =
+    initialAccountType === "personal" ? (defaultName ?? "") : "";
+
   // Step 0 is the account-type chooser (pre-step); 1–3 are the numbered steps.
-  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
-  const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(locked ? 1 : 0);
+  const [accountType, setAccountType] = useState<AccountType | null>(
+    initialAccountType ?? null,
+  );
 
   // Step 1 — country & currency
   const [currencyCode, setCurrencyCode] = useState(
@@ -145,7 +168,7 @@ export default function MerchantOnboarding({
   const [bankName, setBankName] = useState("");
 
   // Step 3 — confirm (shop identity; business branch adds category/role)
-  const [businessName, setBusinessName] = useState("");
+  const [businessName, setBusinessName] = useState(initialName);
   const [city, setCity] = useState("");
   const [category, setCategory] = useState(DEFAULT_CATEGORY);
   const [subcategory, setSubcategory] = useState(DEFAULT_SUBCATEGORY);
@@ -173,14 +196,16 @@ export default function MerchantOnboarding({
 
   // ---------- Success panel ----------
   if (merchant) {
+    const personal = accountType === "personal";
     return (
       <div className="flex flex-col items-center gap-6 rounded-3xl bg-white p-6 motion-safe:animate-pop">
         <h2 className="text-center font-sans text-[34px] font-extrabold leading-10 tracking-tight text-wise-content">
-          You&apos;re tourist-ready
+          {personal ? "Your personal QR is ready" : "You're tourist-ready"}
         </h2>
         <p className="max-w-xs text-center text-[15px] text-wise-secondary">
-          Put this QR where travelers can see it — they scan, enter an amount,
-          and pay in their own currency.
+          {personal
+            ? "Share it or keep it on your phone — travelers scan it, enter an amount, and pay you in their own currency."
+            : "Put this QR where travelers can see it — they scan, enter an amount, and pay in their own currency."}
         </p>
 
         <QrCard
@@ -204,13 +229,17 @@ export default function MerchantOnboarding({
         >
           Open pay page
         </a>
-        <button
-          type="button"
-          onClick={resetAll}
-          className="text-sm text-wise-forest underline underline-offset-4"
-        >
-          Onboard another shop
-        </button>
+        {locked ? null : (
+          // Locked mode omits the reset link — the embedding parent owns the
+          // close/switch affordances.
+          <button
+            type="button"
+            onClick={resetAll}
+            className="text-sm text-wise-forest underline underline-offset-4"
+          >
+            Onboard another shop
+          </button>
+        )}
       </div>
     );
   }
@@ -227,12 +256,12 @@ export default function MerchantOnboarding({
   function resetAll() {
     setMerchant(null);
     setQrDataUrl(null);
-    setStep(0);
-    setAccountType(null);
+    setStep(locked ? 1 : 0);
+    setAccountType(initialAccountType ?? null);
     setCurrencyCode(CURRENCIES[0]?.code ?? "SGD");
     setAccountHolder("");
     setBankName("");
-    setBusinessName("");
+    setBusinessName(initialName);
     setCity("");
     setCategory(DEFAULT_CATEGORY);
     setSubcategory(DEFAULT_SUBCATEGORY);
@@ -252,9 +281,10 @@ export default function MerchantOnboarding({
         : accountHolder,
       targetCurrency: selectedCurrency.code,
       targetCountry: selectedCurrency.country,
-      // Personal merchants map to the literal "Personal"; business merchants
+      // Personal merchants map to the shared sentinel; business merchants
       // map to the chosen first-level category.
-      businessType: accountType === "personal" ? "Personal" : category,
+      businessType:
+        accountType === "personal" ? PERSONAL_BUSINESS_TYPE : category,
     });
   }
 
@@ -340,7 +370,16 @@ export default function MerchantOnboarding({
           </form>
         ) : (
           <div className="flex flex-col gap-6">
-            <StepHeader step={step} total={3} steps={STEP_NAMES} />
+            <div className="flex flex-col gap-2">
+              {locked ? (
+                // Locked mode hides the chooser, so this eyebrow keeps the
+                // chosen branch legible through all three steps.
+                <p className="text-[13px] text-wise-tertiary">
+                  {accountType === "personal" ? "Personal QR" : "Business QR"}
+                </p>
+              ) : null}
+              <StepHeader step={step} total={3} steps={STEP_NAMES} />
+            </div>
 
             {step === 1 ? (
               // ---------- Step 1: country & currency ----------
@@ -371,13 +410,16 @@ export default function MerchantOnboarding({
                 <PillButton type="submit" fullWidth>
                   Continue
                 </PillButton>
-                <button
-                  type="button"
-                  onClick={() => setStep(0)}
-                  className="text-sm text-wise-forest underline underline-offset-4"
-                >
-                  Back
-                </button>
+                {locked ? null : (
+                  // The chooser doesn't exist in locked mode — no back link.
+                  <button
+                    type="button"
+                    onClick={() => setStep(0)}
+                    className="text-sm text-wise-forest underline underline-offset-4"
+                  >
+                    Back
+                  </button>
+                )}
               </form>
             ) : step === 2 ? (
               // ---------- Step 2: account details ----------
@@ -431,12 +473,18 @@ export default function MerchantOnboarding({
                   Confirm your details
                 </h2>
                 <FilledInput
-                  label="Business name"
+                  label={
+                    accountType === "personal" ? "Your name" : "Business name"
+                  }
                   name="businessName"
                   required
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Madam Linh's Coffee"
+                  placeholder={
+                    accountType === "personal"
+                      ? "Linh Nguyen"
+                      : "Madam Linh's Coffee"
+                  }
                 />
                 <FilledInput
                   label="City"
