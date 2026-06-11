@@ -10,13 +10,19 @@ import { PillButton } from "~/app/_components/ui/PillButton";
  * bright green action surface with a forest "View & print" pill into the
  * owner-only detail page. The pill keeps "View store" as its accessible name
  * (e2e contract) while the visible label invites the print action.
+ *
+ * `hero` renders the larger r32 hero-card treatment (wider tile, bigger QR)
+ * — used by the personal-QR card so the default QR visibly outranks the
+ * business minis.
  */
 export default function StoreMiniQr({
   merchantId,
   merchantName,
+  hero = false,
 }: {
   merchantId: string;
   merchantName: string;
+  hero?: boolean;
 }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
@@ -27,18 +33,28 @@ export default function StoreMiniQr({
     void QRCode.toDataURL(url, { width: 320, margin: 4 }).then(setQrDataUrl);
   }, [merchantId]);
 
+  // Hero = the r32 green hero-card rule (rounded-wise-hero matches QrCard);
+  // mini = the compact r24 list tile. Sizes stay on the 8pt grid.
+  const qrSize = hero ? "h-32 w-32" : "h-24 w-24";
+
   return (
-    <div className="flex w-full max-w-52 flex-col items-stretch gap-3 rounded-3xl bg-wise-green p-4">
+    <div
+      className={`flex w-full flex-col items-stretch gap-3 bg-wise-green ${
+        hero ? "max-w-64 rounded-wise-hero p-6" : "max-w-52 rounded-3xl p-4"
+      }`}
+    >
       <div className="flex items-center justify-center rounded-2xl bg-white p-2">
         {qrDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={qrDataUrl}
             alt={`Pay QR code for ${merchantName}`}
-            className="h-24 w-24 bg-white"
+            className={`${qrSize} bg-white`}
           />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center text-center text-[13px] text-wise-tertiary">
+          <div
+            className={`flex ${qrSize} items-center justify-center text-center text-[13px] text-wise-tertiary`}
+          >
             Generating QR…
           </div>
         )}

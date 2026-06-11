@@ -3,10 +3,10 @@ import { expect, test } from "@playwright/test";
 import { cleanupTestData, createTestSession } from "./helpers/session";
 
 /** Full merchant onboarding behind the auth gate — local target only (NOT
- *  @live): it injects a database-session cookie against the local DB, drives
- *  the chooser + 3-step wizard, and follows the generated QR's pay link
- *  end-to-end. This is the "tourist-ready overnight" half of the demo
- *  storyline. */
+ *  @live): it injects a database-session cookie against the local DB, flips
+ *  the personal-default first run to the business variant, drives the 3-step
+ *  wizard, and follows the generated QR's pay link end-to-end. This is the
+ *  "tourist-ready overnight" half of the demo storyline. */
 test.describe("merchant onboarding (session-injected)", () => {
   test.skip(
     Boolean(process.env.E2E_BASE_URL),
@@ -33,29 +33,25 @@ test.describe("merchant onboarding (session-injected)", () => {
     await page.goto("/dashboard");
     await expect(page.getByText(/signed in as/i)).toBeVisible();
 
-    // Fresh e2e user → the wizard renders directly. Defense-in-depth: if a
-    // leftover store still put the dashboard in list-mode, open the wizard
-    // via "Add another store" instead of failing confusingly.
-    const wizardHeading = page.getByRole("heading", {
-      name: "How will you take payments?",
+    // Fresh e2e user → the personal-default wizard renders directly at step 1
+    // (no chooser anymore). This spec exercises the business branch (the
+    // category selects on the confirm step), so flip via the first-run switch
+    // link. Defense-in-depth: if a leftover store still put the dashboard in
+    // list-mode, "Add a business" opens the wizard already locked to business.
+    const step1Heading = page.getByRole("heading", {
+      name: "Choose your country & currency",
     });
-    if (!(await wizardHeading.isVisible())) {
+    if (await step1Heading.isVisible()) {
       await page
-        .getByRole("button", { name: /add another store/i })
+        .getByRole("button", { name: /setting up a business instead/i })
         .click();
+    } else {
+      await page.getByRole("button", { name: /add a business/i }).click();
     }
-
-    // Pre-step — account-type chooser. Pick Business / Store (exercises the
-    // category branch on the confirm step).
-    await expect(wizardHeading).toBeVisible();
-    await page.getByRole("button", { name: /business \/ store/i }).click();
-    await page.getByRole("button", { name: "Continue" }).click();
 
     // Step 1 of 3 — country & currency. Pick SGD explicitly so the merchant's
     // payout currency is deterministic.
-    await expect(
-      page.getByRole("heading", { name: "Choose your country & currency" }),
-    ).toBeVisible();
+    await expect(step1Heading).toBeVisible();
     await page.getByRole("button", { name: /singapore dollar/i }).click();
     await page.getByRole("button", { name: "Continue" }).click();
 

@@ -41,8 +41,9 @@ export default {
       },
       // Legacy wise-* radius names kept so pre-redesign screens still compile.
       // Redesign scale: inputs r12 (rounded-xl), cards r16–24 (rounded-2xl /
-      // rounded-3xl), QR hero card r32 (rounded-[32px]).
+      // rounded-3xl), QR hero card r32 (rounded-wise-hero).
       borderRadius: {
+        "wise-hero": "32px",
         "wise-sm": "16px",
         "wise-md": "20px",
         "wise-lg": "30px",

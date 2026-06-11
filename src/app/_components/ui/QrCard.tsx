@@ -25,7 +25,7 @@ export function QrCard({
   className?: string;
 }) {
   return (
-    <div className={`rounded-[32px] bg-wise-green p-6 ${className}`}>
+    <div className={`rounded-wise-hero bg-wise-green p-6 ${className}`}>
       <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-4">
         {qrSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
